@@ -13,7 +13,7 @@ typedef struct Article Article;
 struct Article
 {
     int QTC; // Quantity
-    char *Designation;
+    char Designation[20];
     int Prix;
     int Critique; // si 1 qlors oui sinon 0 alors non
     Date date_per;
@@ -43,7 +43,7 @@ Aliste *initAliste() /// -- MARCHE COMME INITPILE --
 {
     Aliste *Pile = malloc(sizeof(*Pile));
     Article *new = malloc(sizeof(*new));
-    new->Designation = " ";
+    strcpy(new->Designation, " ");
     new->Prix = 0;
     new->QTC = 0;
     new->date_per.aaaa = 0;
@@ -58,7 +58,7 @@ Aliste *initAliste() /// -- MARCHE COMME INITPILE --
 void AjouArti(Aliste *Pile, Article NewArt) /// NewArt = nouveau Article a ajouter --- CA MARCHE COMME EMPILER ---
 {
     Article *new = malloc(sizeof(*new));
-    new->Designation = NewArt.Designation;
+    strcpy(new->Designation, NewArt.Designation);
     new->Prix = NewArt.Prix;
     new->QTC = NewArt.QTC;
     new->date_per.aaaa = NewArt.date_per.aaaa;
@@ -72,7 +72,7 @@ void AjouArti(Aliste *Pile, Article NewArt) /// NewArt = nouveau Article a ajout
 Article DepilerArticle(Aliste *Pile) /// --- CA MARCHE COMME DEPILER et elle renvoi un article ---
 {
     Article *new = malloc(sizeof(*new));
-    new->Designation = Pile->Sommet->Designation;
+    strcpy(new->Designation, Pile->Sommet->Designation);
     new->Prix = Pile->Sommet->Prix;
     new->QTC = Pile->Sommet->QTC;
     new->date_per.aaaa = Pile->Sommet->date_per.aaaa;
@@ -295,7 +295,7 @@ void ModifierArt(Aliste *Pile, char *referance)
     Aliste *TempP = initAliste();
     Article x;
     int R, n, NB;   // R pour test du boocle DO WHILE / n pout le test du switch / NB variable intermediaire pour les chengement entier
-    char *ND;       // ND variable intermediaire pour changement des chaines
+    char ND[5];     // ND variable intermediaire pour changement des chaines
     int NJ, NM, NA; // variables intermediaires pour changement du date
     int trouve;
 
@@ -325,39 +325,33 @@ void ModifierArt(Aliste *Pile, char *referance)
         {
         case 1:
             printf("donner la nouvelle quantite: \n");
-            scanf("%d", &NB);
-            x.QTC = NB;
+            scanf("%d", &x.QTC);
+
             break;
 
         case 2:
             printf("donner le nouveau Prix:");
-            scanf("%d", &NB);
-            x.Prix = NB;
+            scanf("%d", &x.Prix);
+
             break;
 
         case 3:
             printf("donner la nouvelle Designation: ");
-            scanf("%s", &ND);
-            strcpy(x.Designation, ND);
+            scanf("%s", &x.Designation);
             break;
 
         case 4:
             printf("donner la nouvelle Date d'expiration:");
-            scanf("%d", &NJ);
-            scanf("%d", &NM);
-            scanf("%d", &NA);
-            x.date_per.jj = NJ;
-            x.date_per.mm = NM;
-            x.date_per.aaaa = NA;
+            scanf("%d", &x.date_per.jj);
+            scanf("%d", &x.date_per.mm);
+            scanf("%d", &x.date_per.aaaa);
+
             break;
 
         case 5:
             printf("Critique ou Non Critique(oui/non):");
             scanf("%s", &ND);
-            printf("test");
-            int EE = strcmp(ND, "oui");
-            printf("%d", EE);
-            if (EE == 0)
+            if (strcmp(ND, "oui") == 0)
             {
                 x.Critique = 1;
             }
@@ -387,19 +381,19 @@ void main()
     Aliste *AA = initAliste();
 
     Article produit1;
-    produit1.Designation = "iPhoneXS";
+    strcpy(produit1.Designation, "iPhoneXS");
     produit1.Prix = 130;
     produit1.QTC = 20;
     produit1.Critique = 0;
 
     Article produit2;
-    produit2.Designation = "SamsungA10";
+    strcpy(produit2.Designation, "SamsungA10");
     produit2.Prix = 10;
     produit2.QTC = 10;
     produit2.Critique = 1;
 
     Article produit3;
-    produit3.Designation = "Redmi7i";
+    strcpy(produit3.Designation, "Redmi7i");
     produit3.Prix = 25;
     produit3.QTC = 44;
     produit3.Critique = 1;
@@ -417,7 +411,7 @@ void main()
     produit1.date_per.aaaa = 2013;
 
     Article produit4;
-    produit4.Designation = "Redmi7ii";
+    strcpy(produit4.Designation, "Redmi7ii");
     produit4.Prix = 25;
     produit4.QTC = 44;
     produit4.Critique = 0;
@@ -462,9 +456,8 @@ void main()
     affArtiList(AA);
     printf("\n");
     AffArtNonCrit(AA);
-    char *tt;
-    tt = "iPhoneXS";
-    ModifierArt(AA, tt);
+
+    ModifierArt(AA, "iPhoneXS");
     affArtiList(AA);
 }
 
