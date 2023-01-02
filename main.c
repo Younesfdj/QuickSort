@@ -467,3 +467,5 @@ void main()
     ModifierArt(AA, tt);
     affArtiList(AA);
 }
+
+// ya youneeeessssssssss ouiiii
