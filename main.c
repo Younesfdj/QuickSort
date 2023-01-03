@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 typedef struct Date Date;
 struct Date
@@ -99,11 +100,17 @@ void affArtiList(Aliste *Pile)
         temp = DepilerArticle(Pile);
         if (temp.Critique == 1)
         {
+            if (temp.date_per.aaaa!=0 )
             printf("\n%s\tQTC:%d\tPrix:%dda Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            else
+            printf("\n%s\tQTC:%d\tPrix:%dda Critique ", temp.Designation, temp.QTC, temp.Prix);
         }
         else if (temp.Critique == 0)
         {
-            printf("\n%s\tQTC:%d\tPrix:%dda Non-Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            if (temp.date_per.aaaa!=0 )
+            printf("\n%s\tQTC:%d\tPrix:%dda Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            else
+            printf("\n%s\tQTC:%d\tPrix:%dda Critique ", temp.Designation, temp.QTC, temp.Prix);
         }
         AjouArti(TempPile, temp);
     }
@@ -294,10 +301,10 @@ void ModifierArt(Aliste *Pile, char *referance)
 {
     Aliste *TempP = initAliste();
     Article x;
-    int R, n, NB;   // R pour test du boocle DO WHILE / n pout le test du switch / NB variable intermediaire pour les chengement entier
-    char ND[5];     // ND variable intermediaire pour changement des chaines
+    int n, NB;   // R pour test du boocle DO WHILE / n pout le test du switch / NB variable intermediaire pour les chengement entier
+    char ND,R='0';     // ND variable intermediaire pour changement des chaines
     int NJ, NM, NA; // variables intermediaires pour changement du date
-    int trouve;
+    int trouve,repeat;
 
     trouve = 0;
     while (Pile->Sommet->suiv != NULL && trouve == 0)
@@ -320,54 +327,57 @@ void ModifierArt(Aliste *Pile, char *referance)
         printf("3-Designation\n");
         printf("4-Date d'expiration\n");
         printf("5-Critique ou non\n");
+        printf("6-Quitter cette page\n");
         scanf("%d", &n);
         switch (n)
         {
         case 1:
-            printf("donner la nouvelle quantite: \n");
+            printf("Donner la nouvelle quantite:");
             scanf("%d", &x.QTC);
 
             break;
 
         case 2:
-            printf("donner le nouveau Prix:");
+            printf("Donner le nouveau Prix:");
             scanf("%d", &x.Prix);
 
             break;
 
         case 3:
-            printf("donner la nouvelle Designation: ");
-            scanf("%s", &x.Designation);
+            printf("Donner la nouvelle Designation:");
+            scanf("%s",&x.Designation);
+
             break;
 
         case 4:
-            printf("donner la nouvelle Date d'expiration:");
-            scanf("%d", &x.date_per.jj);
-            scanf("%d", &x.date_per.mm);
-            scanf("%d", &x.date_per.aaaa);
+            printf("Donner la nouvelle Date d'expiration: (jj/mm/aaaa)");
+            scanf("%d/%d/%d", &x.date_per.jj,&x.date_per.mm,&x.date_per.aaaa);
 
             break;
 
         case 5:
-            printf("Critique ou Non Critique(oui/non):");
-            scanf("%s", &ND);
-            if (strcmp(ND, "oui") == 0)
-            {
-                x.Critique = 1;
-            }
-            else
-            {
-                x.Critique = 0;
-            }
+            do {
+            repeat=0;
+            printf("Critique ou Non Critique: (o/n)\n");
+            scanf(" %c",&ND);
+            switch (tolower(ND)) {
+                case 'o':x.Critique = 1;break;
+                case 'n':x.Critique = 0;break;
+                default:
+                    repeat = 1;
+            }}while (repeat==1);
+
             break;
 
+        case 6:goto reconstruction_pile;
         default:
-            printf("SVP choisir un numero de 1 a 5 !");
+            printf("\nChoisissez un numero de 1 a 6 !");
             break;
         }
-        printf("\n voulez vous faire un autre changement ?(Si oui tapez 1)");
-        scanf("%d", &R);
-    } while (R == 1);
+        printf("\nVoulez vous faire un autre changement ?(Si oui tapez 1)");
+        R=getch();
+    } while (R == '1');
+    reconstruction_pile:
     AjouArti(Pile, x);
     while (TempP->Sommet->suiv != NULL)
     {
@@ -447,18 +457,17 @@ void main()
     // Rech_carac(AA,produit4,'3'); // n'affiche rien
     // Rech_carac(AA,produit3,'1'); // affiche redmi
 
-    Affiche_arti_exp(AA);
+    //Affiche_arti_exp(AA);
 
     affArtiList(AA);
     printf("\n");
-    AffArtCrit(AA);
+    //AffArtCrit(AA);
     printf("\n");
-    affArtiList(AA);
+    //affArtiList(AA);
     printf("\n");
-    AffArtNonCrit(AA);
+    //AffArtNonCrit(AA);
 
     ModifierArt(AA, "iPhoneXS");
     affArtiList(AA);
+    getch();
 }
-
-// ya youneeeessssssssss ouiiii
