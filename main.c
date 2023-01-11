@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 
+//--------------------------Declaration des structures--------------------------//
 typedef struct Date Date;
 struct Date
 {
@@ -14,7 +15,7 @@ struct Article
 {
     int QTC; // Quantity
     char Designation[20];
-    int Prix;
+    float Prix;
     int Critique; // si 1 qlors oui sinon 0 alors non
     Date date_per;
     Article *suiv;
@@ -26,19 +27,45 @@ struct Aliste
     Article *Sommet;
 };
 
-typedef struct AchatVente AchatVente;
-struct AchatVente
+typedef struct Commande Commande;
+struct Commande
 {
+    int IDclient;
     int Type;      // si 0 alors Achat sinon si 1 alors Vente
     int NFacture;  // numero de la facture
     int NCommande; // numero de la commande
     // si il y a une facture alors c'est un achat sinon c'est un vente et il y a une commande et non pas une facture
     Date date;
-    int MontantHT;
-    int MontantTTC;
+    float MontantHT;
+    float MontantTTC;
     Aliste *ListeArticle;
+    Commande *suiv;
 };
 
+typedef struct ComListe ComListe;
+struct ComListe
+{
+    Commande *SommetC;
+};
+
+typedef struct Personne Personne;
+struct Personne
+{
+    int ID; // numero client
+    char Nom[15];
+    char Prenom[15];
+    int Phone;
+    char Adresse[50];
+    int Etat; // 0 -> client   1->fournisseur   2->diver
+    Personne *suiv;
+};
+typedef struct Pliste Pliste;
+struct Pliste
+{
+    Personne *SommetP;
+};
+
+//----------------------Initialisation -------------------//
 Aliste *initAliste() /// -- MARCHE COMME INITPILE --
 {
     Aliste *Pile = malloc(sizeof(*Pile));
@@ -55,22 +82,71 @@ Aliste *initAliste() /// -- MARCHE COMME INITPILE --
     return Pile;
 }
 
-void AjouArti(Aliste *Pile, Article NewArt) /// NewArt = nouveau Article a ajouter --- CA MARCHE COMME EMPILER ---
+ComListe *initComListe()
+{
+    ComListe *P = malloc(sizeof(*P));
+    Commande *new = malloc(sizeof(*new));
+    new->date.jj = 0;
+    new->date.mm = 0;
+    new->date.aaaa = 0;
+    new->ListeArticle = NULL;
+    new->MontantHT = 0;
+    new->MontantTTC = 0;
+    new->NCommande = 0;
+    new->NFacture = 0;
+    new->Type = 0;
+    new->IDclient = 0;
+    new->suiv = NULL;
+    P->SommetC = new;
+    return P;
+}
+
+//-------------------------------- Crud Article ----------------------------------------------//
+
+void EmpilerArti(Aliste *P, Article NewArt)
 {
     Article *new = malloc(sizeof(*new));
+    new->date_per.jj = NewArt.date_per.jj;
+    new->date_per.mm = NewArt.date_per.mm;
+    new->date_per.aaaa = NewArt.date_per.aaaa;
+    new->Critique = NewArt.Critique;
     strcpy(new->Designation, NewArt.Designation);
     new->Prix = NewArt.Prix;
     new->QTC = NewArt.QTC;
-    new->date_per.aaaa = NewArt.date_per.aaaa;
-    new->date_per.mm = NewArt.date_per.mm;
-    new->date_per.jj = NewArt.date_per.jj;
-    new->Critique = NewArt.Critique;
+    new->suiv = P->Sommet;
+    P->Sommet = new;
+}
+void AjouArti(Aliste *Pile) /// NewArt = nouveau Article a ajouter --- CA MARCHE COMME EMPILER ---
+{
+    int n;
+    Article *new = malloc(sizeof(*new));
+    printf("donner la Designation de cette article: ");
+    scanf("%s", &new->Designation);
+    printf("le prix: ");
+    scanf("%.2f", &new->Prix);
+    printf("la quantity: ");
+    scanf("%d", &new->QTC);
+    printf("la date d'expiration: ");
+    scanf("%d", &new->date_per.jj);
+    scanf("%d", &new->date_per.mm);
+    scanf("%d", &new->date_per.aaaa);
+    printf("Estce que c'est un article critique?(1-oui/2-non) ");
+    scanf("%d", &n);
+    if (n == 1)
+    {
+        new->Critique = 1;
+    }
+    else if (n == 2)
+    {
+        new->Critique = 0;
+    }
     new->suiv = Pile->Sommet;
     Pile->Sommet = new;
 }
 
 Article DepilerArticle(Aliste *Pile) /// --- CA MARCHE COMME DEPILER et elle renvoi un article ---
 {
+    Article *T;
     Article *new = malloc(sizeof(*new));
     strcpy(new->Designation, Pile->Sommet->Designation);
     new->Prix = Pile->Sommet->Prix;
@@ -80,86 +156,96 @@ Article DepilerArticle(Aliste *Pile) /// --- CA MARCHE COMME DEPILER et elle ren
     new->date_per.mm = Pile->Sommet->date_per.mm;
     new->Critique = Pile->Sommet->Critique;
     new->suiv = NULL;
+    T = Pile->Sommet;
+    free(T);
     Pile->Sommet = Pile->Sommet->suiv;
     return *new;
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//-------------------------les fonctions D'affichage---------------------------------------------------------//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/// AFFICHAGE CE FAIT COMME UNE LISTE !!
-void affArtiList(Aliste *Pile)
+void ModifierArt(Aliste *Pile, char *referance)
 {
-    Aliste *TempPile = initAliste();
-    Article temp;
+    Aliste *TempP = initAliste();
+    Article x;
+    int R, n;   // R pour test du boocle DO WHILE / n pout le test du switch
+    char ND[5]; // ND variable intermediaire pour changement des chaines
 
-    while (Pile->Sommet->suiv != NULL) // affichage
+    int trouve;
+
+    trouve = 0;
+    while (Pile->Sommet->suiv != NULL && trouve == 0)
     {
-        temp = DepilerArticle(Pile);
-        if (temp.Critique == 1)
+        x = DepilerArticle(Pile);
+        if (strcmp(x.Designation, referance) == 0)
         {
-            printf("\n%s\tQTC:%d\tPrix:%dda Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            trouve = 1;
         }
-        else if (temp.Critique == 0)
+        else
         {
-            printf("\n%s\tQTC:%d\tPrix:%dda Non-Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            EmpilerArti(TempP, x);
         }
-        AjouArti(TempPile, temp);
     }
-    while (TempPile->Sommet->suiv != NULL)
+    do
     {
-        temp = DepilerArticle(TempPile);
-        AjouArti(Pile, temp);
+        printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
+        printf("1-Quantite\n");
+        printf("2-Prix\n");
+        printf("3-Designation\n");
+        printf("4-Date d'expiration\n");
+        printf("5-Critique ou non\n");
+        scanf("%d", &n);
+        switch (n)
+        {
+        case 1:
+            printf("donner la nouvelle quantite: \n");
+            scanf("%d", &x.QTC);
+
+            break;
+
+        case 2:
+            printf("donner le nouveau Prix:");
+            scanf("%.2f", &x.Prix);
+
+            break;
+
+        case 3:
+            printf("donner la nouvelle Designation: ");
+            scanf("%s", &x.Designation);
+            break;
+
+        case 4:
+            printf("donner la nouvelle Date d'expiration:");
+            scanf("%d", &x.date_per.jj);
+            scanf("%d", &x.date_per.mm);
+            scanf("%d", &x.date_per.aaaa);
+
+            break;
+
+        case 5:
+            printf("Critique ou Non Critique(oui/non):");
+            scanf("%s", &ND);
+            if (strcmp(ND, "oui") == 0)
+            {
+                x.Critique = 1;
+            }
+            else
+            {
+                x.Critique = 0;
+            }
+            break;
+
+        default:
+            printf("SVP choisir un numero de 1 a 5 !");
+            break;
+        }
+        printf("\n voulez vous faire un autre changement ?(Si oui tapez 1)");
+        scanf("%d", &R);
+    } while (R == 1);
+    EmpilerArti(Pile, x);
+    while (TempP->Sommet->suiv != NULL)
+    {
+        x = DepilerArticle(TempP);
+        EmpilerArti(Pile, x);
     }
 }
-
-// AFFICHAGE DES ARTICLES CRITIQUES
-void AffArtCrit(Aliste *Pile)
-{
-    Aliste *TempPile = initAliste();
-    Article temp;
-
-    while (Pile->Sommet->suiv != NULL) // affichage
-    {
-        temp = DepilerArticle(Pile);
-        if (temp.Critique == 1)
-        {
-            printf("\n%s\tQTC:%d\tPrix:%dda  Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
-        }
-        AjouArti(TempPile, temp);
-    }
-    while (TempPile->Sommet->suiv != NULL)
-    {
-        temp = DepilerArticle(TempPile);
-        AjouArti(Pile, temp);
-    }
-}
-
-// AFFICHAGE DES ARTICLES NON CRITIQUES
-void AffArtNonCrit(Aliste *Pile)
-{
-    Aliste *TempPile = initAliste();
-    Article temp;
-
-    while (Pile->Sommet->suiv != NULL) // affichage
-    {
-        temp = DepilerArticle(Pile);
-        if (temp.Critique == 0)
-        {
-            printf("\n%s\tQTC:%d\tPrix:%dda Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
-        }
-        AjouArti(TempPile, temp);
-    }
-    while (TempPile->Sommet->suiv != NULL)
-    {
-        temp = DepilerArticle(TempPile);
-        AjouArti(Pile, temp);
-    }
-}
-
-/////////////////////// --- SUPPRIMER UN ARTICLE DEFINIE PAR DESIGNIATION ---//////////////////////////////
-
 void SupprimerArticle(Aliste *Pile, Article Art_a_supp) //----suppression d'un article precis---
 {
     Article x;
@@ -174,14 +260,85 @@ void SupprimerArticle(Aliste *Pile, Article Art_a_supp) //----suppression d'un a
         }
         else
         {
-            AjouArti(Pilei, x);
+            EmpilerArti(Pilei, x);
         }
     }
     // --- PARTIE RECONSTRUCION ---
     while (Pilei->Sommet->suiv != NULL)
     {
         x = DepilerArticle(Pilei);
-        AjouArti(Pile, x);
+        EmpilerArti(Pile, x);
+    }
+}
+//-------------------------les fonctions D'affichage---------------------------------------------------------//
+
+/// AFFICHAGE CE FAIT COMME UNE LISTE !!
+void affArtiList(Aliste *Pile)
+{
+    Aliste *TempPile = initAliste();
+    Article temp;
+
+    while (Pile->Sommet->suiv != NULL) // affichage
+    {
+        temp = DepilerArticle(Pile);
+        if (temp.Critique == 1)
+        {
+            printf("\n%s   QTC:%d   Prix:%.2f da Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+        }
+        else if (temp.Critique == 0)
+        {
+            printf("\n%s   QTC:%d   Prix:%.2f da Non-Critique Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+        }
+        EmpilerArti(TempPile, temp);
+    }
+    while (TempPile->Sommet->suiv != NULL)
+    {
+        temp = DepilerArticle(TempPile);
+        EmpilerArti(Pile, temp);
+    }
+}
+
+// AFFICHAGE DES ARTICLES CRITIQUES
+void AffArtCrit(Aliste *Pile)
+{
+    Aliste *TempPile = initAliste();
+    Article temp;
+
+    while (Pile->Sommet->suiv != NULL) // affichage
+    {
+        temp = DepilerArticle(Pile);
+        if (temp.Critique == 1)
+        {
+            printf("\n%s\tQTC:%.2f\tPrix:%dda  Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+        }
+        EmpilerArti(TempPile, temp);
+    }
+    while (TempPile->Sommet->suiv != NULL)
+    {
+        temp = DepilerArticle(TempPile);
+        EmpilerArti(Pile, temp);
+    }
+}
+
+// AFFICHAGE DES ARTICLES NON CRITIQUES
+void AffArtNonCrit(Aliste *Pile)
+{
+    Aliste *TempPile = initAliste();
+    Article temp;
+
+    while (Pile->Sommet->suiv != NULL) // affichage
+    {
+        temp = DepilerArticle(Pile);
+        if (temp.Critique == 0)
+        {
+            printf("\n%s\tQTC:%.2f\tPrix:%dda Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+        }
+        EmpilerArti(TempPile, temp);
+    }
+    while (TempPile->Sommet->suiv != NULL)
+    {
+        temp = DepilerArticle(TempPile);
+        EmpilerArti(Pile, temp);
     }
 }
 
@@ -197,7 +354,7 @@ void Rech_carac(Aliste *P, Article Art_a_rech, char option)
         while (P->Sommet != NULL)
         {
             x = DepilerArticle(P);
-            AjouArti(I, x);
+            EmpilerArti(I, x);
             switch (option)
             {
             case '1': // 1 pour Designation
@@ -205,7 +362,7 @@ void Rech_carac(Aliste *P, Article Art_a_rech, char option)
                 {
                     if (exist == 0)
                         exist++;
-                    printf("%s\tQTC:%d\tPrix:%d da\n", x.Designation, x.QTC, x.Prix);
+                    printf("%s\tQTC:%.2f\tPrix:%d da\n", x.Designation, x.QTC, x.Prix);
                 }
                 break;
             case '2': // 2 pour date de peremption
@@ -213,7 +370,7 @@ void Rech_carac(Aliste *P, Article Art_a_rech, char option)
                 {
                     if (exist == 0)
                         exist++;
-                    printf("%s\tQTC:%d\tPrix:%d da\n Date:%d/%d/%d", x.Designation, x.QTC, x.Prix, x.date_per.jj, x.date_per.mm, x.date_per.aaaa);
+                    printf("%s\tQTC:%.2f\tPrix:%d da\n Date:%d/%d/%d", x.Designation, x.QTC, x.Prix, x.date_per.jj, x.date_per.mm, x.date_per.aaaa);
                 }
                 break;
             }
@@ -224,7 +381,7 @@ void Rech_carac(Aliste *P, Article Art_a_rech, char option)
         while (I->Sommet->suiv != NULL)
         {
             x = DepilerArticle(I);
-            AjouArti(P, x);
+            EmpilerArti(P, x);
         }
     }
 }
@@ -277,108 +434,271 @@ void Affiche_arti_exp(Aliste *P)
     while (P->Sommet != NULL)
     {
         x = DepilerArticle(P);
-        AjouArti(I, x);
+        EmpilerArti(I, x);
         if (DateCmp(current_date, x.date_per) == 1 || DateCmp(current_date, x.date_per) == 0)
-            printf("%s\tQTC:%d\tPrix:%d da Date:%d/%d/%d\n", x.Designation, x.QTC, x.Prix, x.date_per.jj, x.date_per.mm, x.date_per.aaaa);
+            printf("%s\tQTC:%.2f\tPrix:%d da Date:%d/%d/%d\n", x.Designation, x.QTC, x.Prix, x.date_per.jj, x.date_per.mm, x.date_per.aaaa);
     }
     // --- PARTIE RECONSTRUCION ---
     while (I->Sommet->suiv != NULL)
     {
         x = DepilerArticle(I);
-        AjouArti(P, x);
+        EmpilerArti(P, x);
     }
 }
 
-//////////////////////---------------- MODIFICATION ARTICLE -------------------/////////////
-void ModifierArt(Aliste *Pile, char *referance)
-{
-    Aliste *TempP = initAliste();
-    Article x;
-    int R, n, NB;   // R pour test du boocle DO WHILE / n pout le test du switch / NB variable intermediaire pour les chengement entier
-    char ND[5];     // ND variable intermediaire pour changement des chaines
-    int NJ, NM, NA; // variables intermediaires pour changement du date
-    int trouve;
+// ----------------------------------- Crud Commande -----------------------------------//
 
-    trouve = 0;
-    while (Pile->Sommet->suiv != NULL && trouve == 0)
+void EmpilerCom(ComListe *P, Commande NewCom)
+{
+    Commande *new = malloc(sizeof(*new));
+    new->date.jj = NewCom.date.jj;
+    new->date.mm = NewCom.date.mm;
+    new->date.aaaa = NewCom.date.aaaa;
+    new->ListeArticle = NewCom.ListeArticle;
+    new->MontantHT = NewCom.MontantHT;
+    new->MontantTTC = NewCom.MontantTTC;
+    new->NCommande = NewCom.NCommande;
+    new->NFacture = NewCom.NFacture;
+    new->Type = NewCom.Type;
+    new->IDclient = NewCom.IDclient;
+    new->suiv = P->SommetC;
+    P->SommetC = new;
+}
+void AjouCom(ComListe *P, Aliste *ListArti)
+{
+    int trouve, n;
+    Article x, y;
+    char test[20];
+    int tt = 1;
+    int R;
+    Aliste *TempPile = initAliste();
+
+    Commande *new = malloc(sizeof(*new));
+    new->ListeArticle = initAliste();
+    printf("\nID du client: ");
+    scanf("%d", &new->IDclient);
+    printf("Numero de la commande: ");
+    scanf("%d", &new->NCommande);
+    printf("Numero de la facture: ");
+    scanf("%d", &new->NFacture);
+    printf("La date: ");
+    scanf("%d", &new->date.jj);
+    scanf("%d", &new->date.mm);
+    scanf("%d", &new->date.aaaa);
+    printf("donner le type de cette commande: (0->achat/1->vente) ");
+    scanf("%d", &new->Type);
+    do
     {
-        x = DepilerArticle(Pile);
-        if (strcmp(x.Designation, referance) == 0)
+        printf("donner l'article que vous voulez ajouter a la commande: ");
+        scanf("%s", &test);
+        trouve = 0;
+        while (ListArti->Sommet->suiv != NULL && trouve == 0)
+        {
+            x = DepilerArticle(ListArti);
+            if (strcmp(x.Designation, test) == 0)
+            {
+                trouve = 1;
+            }
+            else
+            {
+                EmpilerArti(TempPile, x);
+            }
+        }
+        if (trouve == 1) // s'il l'article existe
+        {
+
+            y.Critique = x.Critique;
+            y.date_per.jj = x.date_per.jj;
+            y.date_per.mm = x.date_per.mm;
+            y.date_per.aaaa = x.date_per.aaaa;
+            strcpy(y.Designation, x.Designation);
+            y.Prix = x.Prix;
+
+            while (tt == 1)
+            {
+                printf("combien vous voulez:");
+                scanf("%d", &n);
+                if (x.QTC >= n)
+                {
+                    y.QTC = n;
+                    x.QTC = x.QTC - n;
+
+                    EmpilerArti(new->ListeArticle, y);
+                    tt = 0;
+                }
+                else if (x.QTC < n)
+                {
+                    printf("la quantite restante de cet article est: %d\n", x.QTC);
+                    printf("voulez vous prendre cette quantite?(1-oui / 2-non)");
+                    scanf("%d", &tt);
+                }
+            }
+        }
+        else if (trouve == 0) // l'article n'existe pas
+        {
+            printf("cet article n'existe pas.\n");
+        }
+        EmpilerArti(ListArti, x); // reconstruction de la liste des article
+        while (TempPile->Sommet->suiv != NULL)
+        {
+            x = DepilerArticle(TempPile);
+            EmpilerArti(ListArti, x);
+        }
+        printf("voulez-vous ajouter un autre article ?(1-oui / 2-non)");
+        scanf("%d", &R);
+        if (new->ListeArticle->Sommet->suiv == NULL)
+        {
+            printf("!!ERREUR!! :veuillez ajouter au moins un article pour completer cette commande.\n");
+            R = 1;
+        }
+
+    } while (R == 1);
+    new->MontantHT = 0;                             // initialisation du montant Ht a 0
+    while (new->ListeArticle->Sommet->suiv != NULL) // boucle pour conter les prix de tous les article dans la commande
+    {
+        x = DepilerArticle(new->ListeArticle);
+        new->MontantHT = new->MontantHT + (x.Prix * x.QTC);
+        EmpilerArti(TempPile, x);
+    }
+    while (TempPile->Sommet->suiv != NULL) // reconstruction de la liste d'article
+    {
+        x = DepilerArticle(TempPile);
+        EmpilerArti(new->ListeArticle, x);
+    }
+    new->MontantTTC = (new->MontantHT * 0.19) + new->MontantHT;
+    new->suiv = P->SommetC;
+    P->SommetC = new;
+}
+Commande DepilerCommande(ComListe *Pile)
+{
+    Commande *T;
+    Commande *new = malloc(sizeof(*new));
+    new->ListeArticle = Pile->SommetC->ListeArticle;
+    new->MontantHT = Pile->SommetC->MontantHT;
+    new->MontantTTC = Pile->SommetC->MontantTTC;
+    new->date.aaaa = Pile->SommetC->date.aaaa;
+    new->date.jj = Pile->SommetC->date.jj;
+    new->date.mm = Pile->SommetC->date.mm;
+    new->NCommande = Pile->SommetC->NCommande;
+    new->NFacture = Pile->SommetC->NFacture;
+    new->Type = Pile->SommetC->Type;
+    new->suiv = NULL;
+    T = Pile->SommetC;
+    free(T);
+    Pile->SommetC = Pile->SommetC->suiv;
+    return *new;
+}
+
+void SupprimerCommande(ComListe *Pile, Commande Art_a_supp) //----suppression d'une coommande precis---
+{
+    Commande x;
+    ComListe *Pilei = initComListe();
+    int trouve = 0;
+    while (Pile->SommetC != NULL && trouve == 0)
+    {
+        x = DepilerCommande(Pile);
+        if (x.NCommande == Art_a_supp.NCommande)
         {
             trouve = 1;
         }
         else
         {
-            AjouArti(TempP, x);
+            EmpilerCom(Pilei, x);
+        }
+    }
+    // --- PARTIE RECONSTRUCION ---
+    while (Pilei->SommetC->suiv != NULL)
+    {
+        x = DepilerCommande(Pilei);
+        EmpilerCom(Pile, x);
+    }
+}
+void ModifierCommande(ComListe *Pile, int NCom)
+{
+    ComListe *TempP = initComListe();
+    Commande x;
+    int R, n; // R pour test du boocle DO WHILE / n pout le test du switch
+
+    int trouve;
+
+    trouve = 0;
+    while (Pile->SommetC->suiv != NULL && trouve == 0)
+    {
+        x = DepilerCommande(Pile);
+        if (x.NCommande == NCom)
+        {
+            trouve = 1;
+        }
+        else
+        {
+            EmpilerCom(TempP, x);
         }
     }
     do
     {
         printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
-        printf("1-Quantite\n");
-        printf("2-Prix\n");
-        printf("3-Designation\n");
-        printf("4-Date d'expiration\n");
-        printf("5-Critique ou non\n");
+        printf("1-numero de la commande\n");
+        printf("2-Liste des Articles\n");
+        printf("3-Numero de la facture\n");
+        printf("4-Date\n");
+        printf("5-MontantHT\n");
+        printf("6-Type\n");
         scanf("%d", &n);
         switch (n)
         {
         case 1:
-            printf("donner la nouvelle quantite: \n");
-            scanf("%d", &x.QTC);
+            printf("donner la nouveau numero de commande: \n");
+            scanf("%d", &x.NCommande);
 
             break;
 
         case 2:
-            printf("donner le nouveau Prix:");
-            scanf("%d", &x.Prix);
+            // A revoir
 
             break;
 
         case 3:
-            printf("donner la nouvelle Designation: ");
-            scanf("%s", &x.Designation);
+            printf("donner le nouveau numero de facture: ");
+            scanf("%s", &x.NFacture);
             break;
 
         case 4:
-            printf("donner la nouvelle Date d'expiration:");
-            scanf("%d", &x.date_per.jj);
-            scanf("%d", &x.date_per.mm);
-            scanf("%d", &x.date_per.aaaa);
+            printf("donner la nouvelle Date:");
+            scanf("%d", &x.date.jj);
+            scanf("%d", &x.date.mm);
+            scanf("%d", &x.date.aaaa);
 
             break;
 
         case 5:
-            printf("Critique ou Non Critique(oui/non):");
-            scanf("%s", &ND);
-            if (strcmp(ND, "oui") == 0)
-            {
-                x.Critique = 1;
-            }
-            else
-            {
-                x.Critique = 0;
-            }
+            printf("le nouveau montant HT:");
+            scanf("%d", x.MontantHT);
+            x.MontantTTC = (x.MontantHT * 19) / 100 + x.MontantHT;
+            break;
+        case 6:
+            printf("le nouveau Type:");
+            scanf("%d", x.Type);
             break;
 
         default:
-            printf("SVP choisir un numero de 1 a 5 !");
+            printf("SVP choisir un numero de 1 a 6 !");
             break;
         }
         printf("\n voulez vous faire un autre changement ?(Si oui tapez 1)");
         scanf("%d", &R);
     } while (R == 1);
-    AjouArti(Pile, x);
-    while (TempP->Sommet->suiv != NULL)
+    EmpilerCom(Pile, x);
+    while (TempP->SommetC->suiv != NULL)
     {
-        x = DepilerArticle(TempP);
-        AjouArti(Pile, x);
+        x = DepilerCommande(TempP);
+        EmpilerCom(Pile, x);
     }
 }
 
 void main()
 {
     Aliste *AA = initAliste();
+    ComListe *CC = initComListe();
 
     Article produit1;
     strcpy(produit1.Designation, "iPhoneXS");
@@ -387,7 +707,7 @@ void main()
     produit1.Critique = 0;
 
     Article produit2;
-    strcpy(produit2.Designation, "SamsungA10");
+    strcpy(produit2.Designation, "SS");
     produit2.Prix = 10;
     produit2.QTC = 10;
     produit2.Critique = 1;
@@ -422,10 +742,10 @@ void main()
 
     Article produitSupp;
 
-    AjouArti(AA, produit1);
-    AjouArti(AA, produit2);
-    AjouArti(AA, produit3);
-    AjouArti(AA, produit4);
+    EmpilerArti(AA, produit1);
+    EmpilerArti(AA, produit2);
+    EmpilerArti(AA, produit3);
+    EmpilerArti(AA, produit4);
 
     // affArtiList(AA);
     //  ----TEST DE SuppArti(AA)---
@@ -456,9 +776,14 @@ void main()
     affArtiList(AA);
     printf("\n");
     AffArtNonCrit(AA);
+    printf("\n");
+    Article hh;
+    hh = DepilerArticle(AA);
 
-    ModifierArt(AA, "iPhoneXS");
+    affArtiList(AA);
+
+    // ModifierArt(AA, "iPhoneXS");
+    // affArtiList(AA);
+    AjouCom(CC, AA);
     affArtiList(AA);
 }
-
-// ya youneeeessssssssss ouiiii
