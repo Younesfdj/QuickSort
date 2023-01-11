@@ -680,6 +680,8 @@ void ModifierCommande(ComListe *Pile, int NCom)
             scanf("%d", x.Type);
             break;
 
+        case 6:
+            goto reconstruction_pile;
         default:
             printf("SVP choisir un numero de 1 a 6 !");
             break;
@@ -767,13 +769,13 @@ void main()
     // Rech_carac(AA,produit4,'3'); // n'affiche rien
     // Rech_carac(AA,produit3,'1'); // affiche redmi
 
-    Affiche_arti_exp(AA);
+    // Affiche_arti_exp(AA);
 
     affArtiList(AA);
     printf("\n");
-    AffArtCrit(AA);
+    // AffArtCrit(AA);
     printf("\n");
-    affArtiList(AA);
+    // affArtiList(AA);
     printf("\n");
     AffArtNonCrit(AA);
     printf("\n");
@@ -786,4 +788,5 @@ void main()
     // affArtiList(AA);
     AjouCom(CC, AA);
     affArtiList(AA);
+    getch();
 }
