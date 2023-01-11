@@ -680,8 +680,6 @@ void ModifierCommande(ComListe *Pile, int NCom)
             scanf("%d", x.Type);
             break;
 
-        case 6:
-            goto reconstruction_pile;
         default:
             printf("SVP choisir un numero de 1 a 6 !");
             break;
@@ -788,5 +786,4 @@ void main()
     // affArtiList(AA);
     AjouCom(CC, AA);
     affArtiList(AA);
-    getch();
 }
