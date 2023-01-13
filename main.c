@@ -2,7 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
+int clear_input_buffer(void)
+{
+    int ch;
+    while (((ch = getchar()) != EOF) && (ch != '\n'))
+        ;
+    return ch;
+}
 //--------------------------Declaration des structures--------------------------//
 typedef struct Date Date;
 struct Date
@@ -18,6 +24,7 @@ struct Article
     float Prix;
     int Critique; // si 1 qlors oui sinon 0 alors non
     Date date_per;
+    int NBvente;
     Article *suiv;
 };
 
@@ -55,14 +62,16 @@ struct Personne
     char Nom[15];
     char Prenom[15];
     int Phone;
-    char Adresse[50];
-    int Etat; // 0 -> client   1->fournisseur   2->diver
+    char Adresse[30];
+    int Etat;  // 1 -> client   2->fournisseur   3->diver
+    int NBCom; // nombre de commandes
     Personne *suiv;
 };
 typedef struct Pliste Pliste;
 struct Pliste
 {
-    Personne *SommetP;
+    Personne *TeteP;
+    Personne *QueueP;
 };
 
 //----------------------Initialisation -------------------//
@@ -77,6 +86,7 @@ Aliste *initAliste() /// -- MARCHE COMME INITPILE --
     new->date_per.jj = 0;
     new->date_per.mm = 0;
     new->Critique = 0;
+    new->NBvente = 0;
     new->suiv = NULL;
     Pile->Sommet = new;
     return Pile;
@@ -94,13 +104,29 @@ ComListe *initComListe()
     new->MontantTTC = 0;
     new->NCommande = 0;
     new->NFacture = 0;
-    new->Type = 0;
+    new->Type = 2;
     new->IDclient = 0;
     new->suiv = NULL;
     P->SommetC = new;
     return P;
 }
 
+Pliste *initPListe()
+{
+    Pliste *P = malloc(sizeof(*P));
+    Personne *new = malloc(sizeof(*new));
+    new->ID = 0;
+    new->Etat = 0;
+    new->Phone = 0;
+    new->NBCom = 0;
+    strcpy(new->Nom, " ");
+    strcpy(new->Prenom, " ");
+    strcpy(new->Adresse, " ");
+    new->suiv = NULL;
+    P->TeteP = new;
+    P->QueueP = new;
+    return P;
+}
 //-------------------------------- Crud Article ----------------------------------------------//
 
 void EmpilerArti(Aliste *P, Article NewArt)
@@ -113,6 +139,7 @@ void EmpilerArti(Aliste *P, Article NewArt)
     strcpy(new->Designation, NewArt.Designation);
     new->Prix = NewArt.Prix;
     new->QTC = NewArt.QTC;
+    new->NBvente = NewArt.NBvente;
     new->suiv = P->Sommet;
     P->Sommet = new;
 }
@@ -121,15 +148,14 @@ void AjouArti(Aliste *Pile) /// NewArt = nouveau Article a ajouter --- CA MARCHE
     int n;
     Article *new = malloc(sizeof(*new));
     printf("donner la Designation de cette article: ");
-    scanf("%s", &new->Designation);
+    clear_input_buffer();
+    gets(new->Designation);
     printf("le prix: ");
-    scanf("%.2f", &new->Prix);
+    scanf("%f", &new->Prix);
     printf("la quantity: ");
     scanf("%d", &new->QTC);
     printf("la date d'expiration: ");
-    scanf("%d", &new->date_per.jj);
-    scanf("%d", &new->date_per.mm);
-    scanf("%d", &new->date_per.aaaa);
+    scanf("%d/%d/%d", &new->date_per.jj, &new->date_per.mm, &new->date_per.aaaa);
     printf("Estce que c'est un article critique?(1-oui/2-non) ");
     scanf("%d", &n);
     if (n == 1)
@@ -140,6 +166,7 @@ void AjouArti(Aliste *Pile) /// NewArt = nouveau Article a ajouter --- CA MARCHE
     {
         new->Critique = 0;
     }
+    new->NBvente = 0;
     new->suiv = Pile->Sommet;
     Pile->Sommet = new;
 }
@@ -155,10 +182,11 @@ Article DepilerArticle(Aliste *Pile) /// --- CA MARCHE COMME DEPILER et elle ren
     new->date_per.jj = Pile->Sommet->date_per.jj;
     new->date_per.mm = Pile->Sommet->date_per.mm;
     new->Critique = Pile->Sommet->Critique;
+    new->NBvente = Pile->Sommet->NBvente;
     new->suiv = NULL;
     T = Pile->Sommet;
-    free(T);
     Pile->Sommet = Pile->Sommet->suiv;
+    free(T);
     return *new;
 }
 void ModifierArt(Aliste *Pile, char *referance)
@@ -202,13 +230,14 @@ void ModifierArt(Aliste *Pile, char *referance)
 
         case 2:
             printf("donner le nouveau Prix:");
-            scanf("%.2f", &x.Prix);
+            scanf("%f", &x.Prix);
 
             break;
 
         case 3:
             printf("donner la nouvelle Designation: ");
-            scanf("%s", &x.Designation);
+            clear_input_buffer();
+            gets(x.Designation);
             break;
 
         case 4:
@@ -246,15 +275,19 @@ void ModifierArt(Aliste *Pile, char *referance)
         EmpilerArti(Pile, x);
     }
 }
-void SupprimerArticle(Aliste *Pile, Article Art_a_supp) //----suppression d'un article precis---
+void SupprimerArticle(Aliste *Pile) //----suppression d'un article precis---
 {
+    char D[20];
     Article x;
     Aliste *Pilei = initAliste();
     int trouve = 0;
+    printf("\ndonner la designation de l'article a supprimer: ");
+    gets(D);
+    gets(D);
     while (Pile->Sommet != NULL && trouve == 0)
     {
         x = DepilerArticle(Pile);
-        if (strcmp(x.Designation, Art_a_supp.Designation) == 0)
+        if (strcmp(x.Designation, D) == 0)
         {
             trouve = 1;
         }
@@ -272,7 +305,6 @@ void SupprimerArticle(Aliste *Pile, Article Art_a_supp) //----suppression d'un a
 }
 //-------------------------les fonctions D'affichage---------------------------------------------------------//
 
-/// AFFICHAGE CE FAIT COMME UNE LISTE !!
 void affArtiList(Aliste *Pile)
 {
     Aliste *TempPile = initAliste();
@@ -309,7 +341,7 @@ void AffArtCrit(Aliste *Pile)
         temp = DepilerArticle(Pile);
         if (temp.Critique == 1)
         {
-            printf("\n%s\tQTC:%.2f\tPrix:%dda  Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            printf("\n%s\tQTC:%d\tPrix:%.2fda  Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
         }
         EmpilerArti(TempPile, temp);
     }
@@ -331,7 +363,7 @@ void AffArtNonCrit(Aliste *Pile)
         temp = DepilerArticle(Pile);
         if (temp.Critique == 0)
         {
-            printf("\n%s\tQTC:%.2f\tPrix:%dda Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            printf("\n%s\tQTC:%d\tPrix:%.2fda Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
         }
         EmpilerArti(TempPile, temp);
     }
@@ -446,6 +478,134 @@ void Affiche_arti_exp(Aliste *P)
     }
 }
 
+//---------------------------------- Crud Personne -------------------------------------//
+void AjouPer(Pliste *P)
+{
+
+    Personne *new = malloc(sizeof(*new));
+    if (P->TeteP->ID == 0)
+    {
+        printf("ID: ");
+        scanf("%d", &new->ID);
+        printf("Nom: ");
+        clear_input_buffer();
+        gets(new->Nom);
+        printf("Prenom: ");
+        clear_input_buffer();
+        gets(new->Prenom);
+        printf("Addresse: ");
+        clear_input_buffer();
+        gets(new->Adresse);
+        printf("Phone: ");
+        scanf("%d", &new->Phone);
+        printf("Etat:   client [1]  fournisseur [2]  diver [3]");
+        scanf("%d", &new->Etat);
+        new->NBCom = 0;
+        new->suiv = P->TeteP;
+        P->TeteP = new;
+        P->QueueP = new;
+        return;
+    }
+    if (P->TeteP->ID != 0)
+    {
+        printf("ID:");
+        scanf("%d", &new->ID);
+        printf("Nom: ");
+        clear_input_buffer();
+        gets(new->Nom);
+        printf("Prenom: ");
+        clear_input_buffer();
+        gets(new->Prenom);
+        printf("Addresse: ");
+        clear_input_buffer();
+        gets(new->Adresse);
+        printf("Phone: ");
+        scanf("%d", &new->Phone);
+        printf("Etat:   client [1]  fournisseur [2]  diver [3]");
+        scanf("%d", &new->Etat);
+        new->NBCom = 0;
+        new->suiv = P->QueueP->suiv;
+        P->QueueP->suiv = new;
+        P->QueueP = new;
+    }
+}
+
+void EnfilerPer(Pliste *F, Personne newPer)
+{
+    Personne *new = malloc(sizeof(*new));
+    if (F->TeteP->ID != 0)
+    {
+        new->ID = newPer.ID;
+        new->Etat = newPer.Etat;
+        new->NBCom = newPer.NBCom;
+        new->Phone = newPer.Phone;
+        strcpy(new->Adresse, newPer.Adresse);
+        strcpy(new->Nom, newPer.Nom);
+        strcpy(new->Prenom, newPer.Prenom);
+        new->suiv = F->QueueP->suiv;
+        F->QueueP->suiv = new;
+        F->QueueP = new;
+    }
+    if (F->TeteP->ID == 0)
+    {
+        new->ID = newPer.ID;
+        new->Etat = newPer.Etat;
+        new->NBCom = newPer.NBCom;
+        new->Phone = newPer.Phone;
+        strcpy(new->Adresse, newPer.Adresse);
+        strcpy(new->Nom, newPer.Nom);
+        strcpy(new->Prenom, newPer.Prenom);
+        new->suiv = F->TeteP;
+        F->TeteP = new;
+        F->QueueP = new;
+    }
+}
+
+Personne DefilerPer(Pliste *F)
+{
+    Personne *T;
+    Personne *new = malloc(sizeof(*new));
+    new->ID = F->TeteP->ID;
+    new->NBCom = F->TeteP->NBCom;
+    new->Etat = F->TeteP->Etat;
+    new->Phone = F->TeteP->Phone;
+    strcpy(new->Adresse, F->TeteP->Adresse);
+    strcpy(new->Nom, F->TeteP->Nom);
+    strcpy(new->Prenom, F->TeteP->Prenom);
+    new->suiv = NULL;
+    T = F->TeteP;
+    F->TeteP = F->TeteP->suiv;
+    free(T);
+    return *new;
+}
+void SupprimerPersonne(Pliste *File) //----suppression d'une Personne precis---
+{
+    int n;
+    Personne x;
+    Pliste *Filei = initPListe();
+    int trouve = 0;
+    printf("\ndonner ID de la personne qui vous voulez supprimer: ");
+    scanf("%d", &n);
+    while (File->TeteP->suiv != NULL && trouve == 0)
+    {
+        x = DefilerPer(File);
+        if (x.ID == n)
+        {
+            trouve = 1;
+        }
+        else
+        {
+            EnfilerPer(Filei, x);
+        }
+    }
+    // --- PARTIE RECONSTRUCION ---
+    while (Filei->TeteP->suiv != NULL)
+    {
+        x = DefilerPer(Filei);
+        EnfilerPer(File, x);
+    }
+}
+
 // ----------------------------------- Crud Commande -----------------------------------//
 
 void EmpilerCom(ComListe *P, Commande NewCom)
@@ -464,95 +624,212 @@ void EmpilerCom(ComListe *P, Commande NewCom)
     new->suiv = P->SommetC;
     P->SommetC = new;
 }
-void AjouCom(ComListe *P, Aliste *ListArti)
+void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
 {
-    int trouve, n;
+    int trouve, n, NC, TC; // NC pour scane ID clien // TC pour tester dans la file des client
     Article x, y;
     char test[20];
     int tt = 1;
-    int R;
+    int R, gg;
     Aliste *TempPile = initAliste();
 
     Commande *new = malloc(sizeof(*new));
     new->ListeArticle = initAliste();
-    printf("\nID du client: ");
-    scanf("%d", &new->IDclient);
+
+    Personne zz;
+    Pliste *TempPer = initPListe();
+    printf("donner l'ID du client: ");
+    scanf("%d", &NC);
+    TC = 0;
+    do
+    {
+        while (ListP->TeteP->suiv != NULL)
+        {
+            zz = DefilerPer(ListP);
+            if (zz.ID == NC)
+            {
+                TC = 1;
+
+                zz.NBCom = zz.NBCom + 1;
+            }
+            EnfilerPer(TempPer, zz);
+        }
+        while (TempPer->TeteP->suiv != NULL)
+        {
+            zz = DefilerPer(TempPer);
+            EnfilerPer(ListP, zz);
+        }
+
+        if (TC == 0)
+        {
+            printf("Ce client n'existe pas,veuiller l'ajouter:\n");
+            AjouPer(ListP);
+        }
+    } while (TC == 0);
+    new->IDclient = NC;
     printf("Numero de la commande: ");
     scanf("%d", &new->NCommande);
     printf("Numero de la facture: ");
     scanf("%d", &new->NFacture);
     printf("La date: ");
-    scanf("%d", &new->date.jj);
-    scanf("%d", &new->date.mm);
-    scanf("%d", &new->date.aaaa);
+    scanf("%d/%d/%d", &new->date.jj, &new->date.mm, &new->date.aaaa);
     printf("donner le type de cette commande: (0->achat/1->vente) ");
     scanf("%d", &new->Type);
-    do
+    if (new->Type == 0)
     {
-        printf("donner l'article que vous voulez ajouter a la commande: ");
-        scanf("%s", &test);
-        trouve = 0;
-        while (ListArti->Sommet->suiv != NULL && trouve == 0)
+        do
         {
-            x = DepilerArticle(ListArti);
-            if (strcmp(x.Designation, test) == 0)
+            printf("donner l'article que vous voulez ajouter a la commande: ");
+            scanf("%s", &test);
+            trouve = 0;
+            while (ListArti->Sommet->suiv != NULL && trouve == 0)
             {
-                trouve = 1;
+                x = DepilerArticle(ListArti);
+                if (strcmp(x.Designation, test) == 0)
+                {
+                    trouve = 1;
+                }
+                else
+                {
+                    EmpilerArti(TempPile, x);
+                }
             }
-            else
+            if (trouve == 1)
             {
-                EmpilerArti(TempPile, x);
-            }
-        }
-        if (trouve == 1) // s'il l'article existe
-        {
-
-            y.Critique = x.Critique;
-            y.date_per.jj = x.date_per.jj;
-            y.date_per.mm = x.date_per.mm;
-            y.date_per.aaaa = x.date_per.aaaa;
-            strcpy(y.Designation, x.Designation);
-            y.Prix = x.Prix;
-
-            while (tt == 1)
-            {
-                printf("combien vous voulez:");
+                printf("cet article existe deja !\n");
+                y.Critique = x.Critique;
+                y.date_per.jj = x.date_per.jj;
+                y.date_per.mm = x.date_per.mm;
+                y.date_per.aaaa = x.date_per.aaaa;
+                strcpy(y.Designation, x.Designation);
+                y.Prix = x.Prix;
+                printf("combien vous voulez ajouter:");
                 scanf("%d", &n);
-                if (x.QTC >= n)
-                {
-                    y.QTC = n;
-                    x.QTC = x.QTC - n;
+                y.QTC = n;
+                x.QTC = x.QTC + n;
+                EmpilerArti(new->ListeArticle, y);
+            }
 
-                    EmpilerArti(new->ListeArticle, y);
-                    tt = 0;
-                }
-                else if (x.QTC < n)
+            EmpilerArti(ListArti, x); // reconstruction de la liste des article
+            while (TempPile->Sommet->suiv != NULL)
+            {
+                x = DepilerArticle(TempPile);
+                EmpilerArti(ListArti, x);
+            }
+            if (trouve == 0)
+            {
+                AjouArti(ListArti);
+
+                x = DepilerArticle(ListArti);
+                y.Critique = x.Critique;
+                y.date_per.jj = x.date_per.jj;
+                y.date_per.mm = x.date_per.mm;
+                y.date_per.aaaa = x.date_per.aaaa;
+                strcpy(y.Designation, x.Designation);
+                y.Prix = x.Prix;
+                y.QTC = x.QTC;
+                x.NBvente = 0;
+                EmpilerArti(ListArti, x);
+                EmpilerArti(new->ListeArticle, y);
+            }
+            printf("voulez-vous ajouter un autre article ?(1-oui / 2-non)");
+            scanf("%d", &R);
+        } while (R == 1);
+    }
+    if (new->Type == 1)
+    {
+        do
+        {
+            printf("donner l'article que vous voulez ajouter a la commande: ");
+            scanf("%s", &test);
+            trouve = 0;
+            while (ListArti->Sommet->suiv != NULL && trouve == 0)
+            {
+                x = DepilerArticle(ListArti);
+                if (strcmp(x.Designation, test) == 0)
                 {
-                    printf("la quantite restante de cet article est: %d\n", x.QTC);
-                    printf("voulez vous prendre cette quantite?(1-oui / 2-non)");
-                    scanf("%d", &tt);
+                    trouve = 1;
+                }
+                else
+                {
+                    EmpilerArti(TempPile, x);
                 }
             }
-        }
-        else if (trouve == 0) // l'article n'existe pas
-        {
-            printf("cet article n'existe pas.\n");
-        }
-        EmpilerArti(ListArti, x); // reconstruction de la liste des article
-        while (TempPile->Sommet->suiv != NULL)
-        {
-            x = DepilerArticle(TempPile);
-            EmpilerArti(ListArti, x);
-        }
-        printf("voulez-vous ajouter un autre article ?(1-oui / 2-non)");
-        scanf("%d", &R);
-        if (new->ListeArticle->Sommet->suiv == NULL)
-        {
-            printf("!!ERREUR!! :veuillez ajouter au moins un article pour completer cette commande.\n");
-            R = 1;
-        }
+            if (trouve == 1) // s'il l'article existe
+            {
 
-    } while (R == 1);
+                y.Critique = x.Critique;
+                y.date_per.jj = x.date_per.jj;
+                y.date_per.mm = x.date_per.mm;
+                y.date_per.aaaa = x.date_per.aaaa;
+                strcpy(y.Designation, x.Designation);
+                y.Prix = x.Prix;
+                tt = 1;
+                while (tt == 1)
+                {
+                    printf("combien vous voulez:");
+                    scanf("%d", &n);
+                    if (x.QTC >= n)
+                    {
+                        y.QTC = n;
+                        x.NBvente = x.NBvente + n;
+                        x.QTC = x.QTC - n;
+
+                        EmpilerArti(new->ListeArticle, y);
+                        tt = 0;
+                    }
+                    else if (x.QTC < n)
+                    {
+                        printf("la quantite restante de cet article est: %d\n", x.QTC);
+                        printf("voulez vous prendre cette quantite?(1-oui / 2-non)");
+                        scanf("%d", &tt);
+                    }
+                }
+            }
+            else if (trouve == 0) // l'article n'existe pas
+            {
+                printf("cet article n'existe pas.\n");
+            }
+            EmpilerArti(ListArti, x); // reconstruction de la liste des article
+            while (TempPile->Sommet->suiv != NULL)
+            {
+                x = DepilerArticle(TempPile);
+                EmpilerArti(ListArti, x);
+            }
+            printf("voulez-vous ajouter un autre article ?(1-oui / 2-non)");
+            scanf("%d", &R);
+            if (new->ListeArticle->Sommet->suiv == NULL)
+            {
+                printf("!!ERREUR!! :veuillez ajouter au moins un article pour completer cette commande.\n");
+                printf("Voulez vous annuler cette commande ?(1-oui / 2-non)");
+                scanf("%d", &gg);
+                if (gg == 1)
+                {
+                    while (ListP->TeteP->suiv != NULL)
+                    {
+                        zz = DefilerPer(ListP);
+                        if (zz.ID == NC)
+                        {
+                            zz.NBCom = zz.NBCom - 1;
+                        }
+                        EnfilerPer(TempPer, zz);
+                    }
+                    while (TempPer->TeteP->suiv != NULL)
+                    {
+                        zz = DefilerPer(TempPer);
+                        EnfilerPer(ListP, zz);
+                    }
+                    free(new);
+                    return;
+                }
+                else
+                {
+                    R = 1;
+                }
+            }
+
+        } while (R == 1);
+    }
     new->MontantHT = 0;                             // initialisation du montant Ht a 0
     while (new->ListeArticle->Sommet->suiv != NULL) // boucle pour conter les prix de tous les article dans la commande
     {
@@ -573,6 +850,7 @@ Commande DepilerCommande(ComListe *Pile)
 {
     Commande *T;
     Commande *new = malloc(sizeof(*new));
+    new->IDclient = Pile->SommetC->IDclient;
     new->ListeArticle = Pile->SommetC->ListeArticle;
     new->MontantHT = Pile->SommetC->MontantHT;
     new->MontantTTC = Pile->SommetC->MontantTTC;
@@ -584,20 +862,23 @@ Commande DepilerCommande(ComListe *Pile)
     new->Type = Pile->SommetC->Type;
     new->suiv = NULL;
     T = Pile->SommetC;
-    free(T);
     Pile->SommetC = Pile->SommetC->suiv;
+    free(T);
     return *new;
 }
 
-void SupprimerCommande(ComListe *Pile, Commande Art_a_supp) //----suppression d'une coommande precis---
+void SupprimerCommande(ComListe *Pile) //----suppression d'une coommande precis---
 {
+    int n;
     Commande x;
     ComListe *Pilei = initComListe();
     int trouve = 0;
+    printf("\ndonner le numero de la commande a supprimer: ");
+    scanf("%d", &n);
     while (Pile->SommetC != NULL && trouve == 0)
     {
         x = DepilerCommande(Pile);
-        if (x.NCommande == Art_a_supp.NCommande)
+        if (x.NCommande == n)
         {
             trouve = 1;
         }
@@ -613,15 +894,18 @@ void SupprimerCommande(ComListe *Pile, Commande Art_a_supp) //----suppression d'
         EmpilerCom(Pile, x);
     }
 }
-void ModifierCommande(ComListe *Pile, int NCom)
+void ModifierCommande(ComListe *Pile, Aliste *ListArti)
 {
     ComListe *TempP = initComListe();
+    Aliste *TempPile = initAliste();
     Commande x;
-    int R, n; // R pour test du boocle DO WHILE / n pout le test du switch
-
+    Article y, z;
+    int R, n, h, tt, NCom; // R pour test du boocle DO WHILE / n pout le test du switch / h pour test
+    char test[20];
     int trouve;
-
     trouve = 0;
+    printf("donner le numero de commande que vous voulez changer: ");
+    scanf("%d", &NCom);
     while (Pile->SommetC->suiv != NULL && trouve == 0)
     {
         x = DepilerCommande(Pile);
@@ -653,7 +937,74 @@ void ModifierCommande(ComListe *Pile, int NCom)
             break;
 
         case 2:
-            // A revoir
+            printf("\t\tQue voulez vous faire: \n");
+            printf("\t\t  Ajouter Article [1]\n");
+            printf("\t\t Supprimer Article [2]\n");
+            scanf("%d", &h);
+            if (h == 1)
+            {
+                printf("donner l'article que vous voulez ajouter a la commande: ");
+                scanf("%s", &test);
+                trouve = 0;
+                while (x.ListeArticle->Sommet->suiv != NULL && trouve == 0)
+                {
+                    z = DepilerArticle(ListArti);
+                    if (strcmp(z.Designation, test) == 0)
+                    {
+                        trouve = 1;
+                    }
+                    else
+                    {
+                        EmpilerArti(TempPile, z);
+                    }
+                }
+                if (trouve == 1) // s'il l'article existe
+                {
+
+                    y.Critique = z.Critique;
+                    y.date_per.jj = z.date_per.jj;
+                    y.date_per.mm = z.date_per.mm;
+                    y.date_per.aaaa = z.date_per.aaaa;
+                    strcpy(y.Designation, z.Designation);
+                    y.Prix = z.Prix;
+
+                    while (tt == 1)
+                    {
+                        printf("combien vous voulez:");
+                        scanf("%d", &n);
+                        z.QTC = z.QTC + y.QTC;
+                        z.NBvente = z.NBvente - y.QTC;
+                        if (z.QTC >= n)
+                        {
+                            y.QTC = n;
+                            z.QTC = z.QTC - n;
+                            z.NBvente = z.NBvente + n;
+                            EmpilerArti(x.ListeArticle, y);
+                            tt = 0;
+                        }
+                        else if (z.QTC < n)
+                        {
+                            printf("la quantite restante de cet article est: %d\n", z.QTC);
+                            printf("voulez vous prendre cette quantite?(1-oui / 2-non)");
+                            scanf("%d", &tt);
+                        }
+                    }
+                }
+                else if (trouve == 0) // l'article n'existe pas
+                {
+                    printf("cet article n'existe pas.\n");
+                }
+                EmpilerArti(ListArti, z); // reconstruction de la liste des article
+                while (TempPile->Sommet->suiv != NULL)
+                {
+                    z = DepilerArticle(TempPile);
+                    EmpilerArti(ListArti, z);
+                }
+            }
+            if (h == 2)
+            {
+                SupprimerArticle(x.ListeArticle);
+            }
 
             break;
 
@@ -695,28 +1046,252 @@ void ModifierCommande(ComListe *Pile, int NCom)
     }
 }
 
+///////////////// ----------- Affichage Commande --------------------///////////////////
+void AffComList(ComListe *P)
+{
+    ComListe *TemP = initComListe();
+    Commande T;
+
+    while (P->SommetC->suiv != NULL)
+    {
+        printf("\n");
+        printf("\n");
+        T = DepilerCommande(P);
+        if (T.Type == 0)
+        {
+            printf("Numero Commande: %d\n", T.NCommande);
+            printf("ID client: %d\n", T.IDclient);
+            printf("Numero de la facture: %d\n", T.NFacture);
+            printf("Date: %d/%d/%d\n", T.date.jj, T.date.mm, T.date.aaaa);
+            printf("Type: Achat\n");
+            printf("Montant HT: %.2f\n", T.MontantHT);
+            printf("Montant TTC: %.2f\n", T.MontantTTC);
+            printf("Liste des articles:");
+            affArtiList(T.ListeArticle);
+        }
+        if (T.Type == 1)
+        {
+            printf("Numero Commande: %d\n", T.NCommande);
+            printf("ID client: %d\n", T.IDclient);
+            printf("Numero de la facture: %d\n", T.NFacture);
+            printf("Date: %d/%d/%d\n", T.date.jj, T.date.mm, T.date.aaaa);
+            printf("Type: Vente\n");
+            printf("Montant HT: %.2f\n", T.MontantHT);
+            printf("Montant TTC: %.2f\n", T.MontantTTC);
+            printf("Liste des articles:");
+            affArtiList(T.ListeArticle);
+        }
+        EmpilerCom(TemP, T);
+    }
+    while (TemP->SommetC->suiv != NULL)
+    {
+        T = DepilerCommande(TemP);
+        EmpilerCom(P, T);
+    }
+}
+void Affichage_cmd(ComListe *P, int Ncom)
+{
+    ComListe *I = initComListe();
+    Commande temp;
+    short int exist = 0;
+    while (P->SommetC->suiv != NULL)
+    {
+        temp = DepilerCommande(P);
+        EmpilerCom(I, temp);
+        if (temp.NCommande == Ncom)
+        {
+            switch (temp.Type)
+            {
+            case 0:
+                printf("ID Fournisseur : %d\n", temp.IDclient);
+                printf("N Facture : %d\n", temp.NFacture);
+                printf("N Commande : %d\n", temp.NCommande);
+                printf("Date : %d/%d/%d\n", temp.date.jj, temp.date.mm, temp.date.aaaa);
+                printf("La liste des articles achetes : ");
+                affArtiList(temp.ListeArticle);
+                break;
+            case 1:
+                printf("ID Client : %d\n", temp.IDclient);
+                printf("N Facture : %d\n", temp.NFacture);
+                printf("N Commande : %d\n", temp.NCommande);
+                printf("Date : %d/%d/%d\n", temp.date.jj, temp.date.mm, temp.date.aaaa);
+                printf("La liste des articles vendus : ");
+                affArtiList(temp.ListeArticle);
+
+                break;
+            }
+            exist++;
+        }
+    }
+    if (exist == 0)
+        printf("Cette Commande n'appartient pas a la liste des Commandes\n");
+
+    // --- PARTIE RECONSTRUCION ---
+    while (I->SommetC->suiv != NULL)
+    {
+        temp = DepilerCommande(I);
+        EmpilerCom(P, temp);
+    }
+}
+void Rech_par_client(ComListe *P)
+{
+    ComListe *I = initComListe();
+    Commande temp;
+    system("cls");
+    int IDclient;
+    printf("Entrer ID du client :");
+    scanf("%d", &IDclient);
+    short int exist = 0;
+    while (P->SommetC->suiv != NULL)
+    {
+        temp = DepilerCommande(P);
+        EmpilerCom(I, temp);
+        if (temp.IDclient == IDclient)
+        {
+            Affichage_cmd(I, temp.NCommande);
+            exist++;
+        }
+    }
+    if (exist == 0)
+        printf("Cet Client n'existe pas\n");
+
+    // --- PARTIE RECONSTRUCION ---
+    while (I->SommetC->suiv != NULL)
+    {
+        temp = DepilerCommande(I);
+        EmpilerCom(P, temp);
+    }
+}
+void Rech_par_cmd(ComListe *P, int Ncom)
+{
+    ComListe *I = initComListe();
+    Commande temp;
+    short int exist = 0;
+    while (P->SommetC->suiv != NULL)
+    {
+        temp = DepilerCommande(P);
+        EmpilerCom(I, temp);
+        if (temp.NCommande == Ncom)
+            exist++;
+    }
+    if (exist == 0)
+        printf("Cette Commande n'appartient pas a la liste des Commandes\n");
+    else
+        printf("Cette Commande figure dans la liste des commandes\n");
+
+    // --- PARTIE RECONSTRUCION ---
+    while (I->SommetC->suiv != NULL)
+    {
+        temp = DepilerCommande(I);
+        EmpilerCom(P, temp);
+    }
+}
+
+//------------------------------- Statistiques ------------------------------//
+void ArtPlusVendu(Aliste *P)
+{
+    Aliste *tempP = initAliste();
+    Article x, y, z;
+    y = DepilerArticle(P);
+    z = y;
+    while (P->Sommet->suiv != NULL)
+    {
+
+        x = DepilerArticle(P);
+        if (z.NBvente < x.NBvente)
+        {
+            z = x;
+        }
+        EmpilerArti(tempP, x);
+    }
+    while (tempP->Sommet->suiv != NULL)
+    {
+        x = DepilerArticle(tempP);
+        EmpilerArti(P, x);
+    }
+    EmpilerArti(P, y);
+    printf("l'article le plus vendu: %s", &z.Designation);
+}
+
+void NBComClient(Pliste *F, int IDclient)
+{
+    Pliste *tempF = initPListe();
+    Personne x;
+
+    while (F->TeteP->suiv != NULL)
+    {
+        x = DefilerPer(F);
+        if (x.ID = IDclient)
+        {
+            printf("Nombre des commande de %s %s est: %d", &x.Nom, &x.Prenom, x.NBCom);
+        }
+        EnfilerPer(tempF, x);
+    }
+    while (tempF->TeteP->suiv != NULL)
+    {
+        x = DefilerPer(tempF);
+        EnfilerPer(F, x);
+    }
+}
+void PireClient(Pliste *F)
+{
+    Pliste *tempP = initPListe();
+    Personne x, y, z;
+    int trouve = 0;
+    while (F->TeteP->suiv != NULL && trouve == 0)
+    {
+        y = DefilerPer(F);
+        if (y.Etat == 0)
+        {
+            z = y;
+            trouve = 1;
+        }
+        EnfilerPer(tempP, y);
+    }
+    while (F->TeteP->suiv != NULL)
+    {
+        x = DefilerPer(F);
+        if (x.Etat == 0 && z.NBCom > x.NBCom)
+        {
+            z = x;
+        }
+        EnfilerPer(tempP, x);
+    }
+    while (tempP->TeteP->suiv != NULL)
+    {
+        x = DefilerPer(tempP);
+        EnfilerPer(F, x);
+    }
+    EnfilerPer(F, y);
+    printf("\nle Pire Client est: %s %s", &z.Nom, &z.Prenom);
+}
+//----------------------------------------- MAIN -----------------------------------//
 void main()
 {
     Aliste *AA = initAliste();
     ComListe *CC = initComListe();
+    Pliste *PP = initPListe();
 
     Article produit1;
     strcpy(produit1.Designation, "iPhoneXS");
     produit1.Prix = 130;
     produit1.QTC = 20;
     produit1.Critique = 0;
+    produit1.NBvente = 4;
 
     Article produit2;
     strcpy(produit2.Designation, "SS");
     produit2.Prix = 10;
     produit2.QTC = 10;
     produit2.Critique = 1;
+    produit2.NBvente = 2;
 
     Article produit3;
     strcpy(produit3.Designation, "Redmi7i");
     produit3.Prix = 25;
     produit3.QTC = 44;
     produit3.Critique = 1;
+    produit3.NBvente = 3;
 
     produit3.date_per.jj = 12;
     produit3.date_per.mm = 12;
@@ -735,6 +1310,7 @@ void main()
     produit4.Prix = 25;
     produit4.QTC = 44;
     produit4.Critique = 0;
+    produit4.NBvente = 10;
 
     produit4.date_per.jj = 0;
     produit4.date_per.mm = 0;
@@ -771,19 +1347,31 @@ void main()
 
     affArtiList(AA);
     printf("\n");
-    // AffArtCrit(AA);
+    AffArtCrit(AA);
     printf("\n");
     // affArtiList(AA);
-    printf("\n");
     AffArtNonCrit(AA);
     printf("\n");
     Article hh;
     hh = DepilerArticle(AA);
 
     affArtiList(AA);
+    // AjouArti(AA);
 
     // ModifierArt(AA, "iPhoneXS");
     // affArtiList(AA);
-    AjouCom(CC, AA);
+    //  SupprimerArticle(AA);
+
+    // AjouPer(PP);
+    AjouCom(CC, AA, PP);
+    AffComList(CC);
+    printf("\n");
+    // ArtPlusVendu(AA);
+    printf("\n");
     affArtiList(AA);
+    printf("\n");
+    Rech_par_cmd(CC, 1);
+    printf("\n");
+    // Rech_par_client(CC);
+    NBComClient(PP, 123);
 }
