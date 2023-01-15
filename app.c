@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <windows.h>
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -197,20 +202,24 @@ Article DepilerArticle(Aliste *Pile) /// --- CA MARCHE COMME DEPILER et elle ren
     free(T);
     return *new;
 }
-void ModifierArt(Aliste *Pile, char *referance)
+void ModifierArt(Aliste *Pile)
 {
+    if (Pile->Sommet->suiv!=NULL){
     Aliste *TempP = initAliste();
     Article x;
     int R, n;   // R pour test du boocle DO WHILE / n pout le test du switch
     char ND[5]; // ND variable intermediaire pour changement des chaines
 
     int trouve;
-
+    char reference[20];
     trouve = 0;
+    clear_input_buffer();
+    printf("Entrer la reference de l'article: ");
+    gets(reference);
     while (Pile->Sommet->suiv != NULL && trouve == 0)
     {
         x = DepilerArticle(Pile);
-        if (strcmp(x.Designation, referance) == 0)
+        if (strcmp(x.Designation, reference) == 0)
         {
             trouve = 1;
         }
@@ -270,10 +279,10 @@ void ModifierArt(Aliste *Pile, char *referance)
             break;
 
         default:
-            printf("SVP choisir un numero de 1 a 5 !");
+            printf("!! Choisissez un chiffre de 1 a 5 !");
             break;
         }
-        printf("\n voulez vous faire un autre changement ?(Si oui tapez 1)");
+        printf("\nvoulez vous faire un autre changement ? (1->oui , 2->non): ");
         scanf("%d", &R);
     } while (R == 1);
     EmpilerArti(Pile, x);
@@ -281,16 +290,18 @@ void ModifierArt(Aliste *Pile, char *referance)
     {
         x = DepilerArticle(TempP);
         EmpilerArti(Pile, x);
-    }
+    }}
+else printf("--Liste Vide--");
 }
 void SupprimerArticle(Aliste *Pile) //----suppression d'un article precis---
 {
+    if (Pile->Sommet->suiv!=NULL){
     char D[20];
     Article x;
     Aliste *Pilei = initAliste();
     int trouve = 0;
-    printf("\ndonner la designation de l'article a supprimer: ");
-    gets(D);
+    clear_input_buffer();
+    printf("\nDonner la reference de l'article a supprimer: ");
     gets(D);
     while (Pile->Sommet != NULL && trouve == 0)
     {
@@ -309,7 +320,8 @@ void SupprimerArticle(Aliste *Pile) //----suppression d'un article precis---
     {
         x = DepilerArticle(Pilei);
         EmpilerArti(Pile, x);
-    }
+    }}
+else printf("--Liste Vide--");
 }
 //-------------------------les fonctions D'affichage---------------------------------------------------------//
 
@@ -920,11 +932,12 @@ Commande DepilerCommande(ComListe *Pile)
 
 void SupprimerCommande(ComListe *Pile) //----suppression d'une coommande precis---
 {
+    if (Pile->SommetC->suiv!=NULL){
     int n;
     Commande x;
     ComListe *Pilei = initComListe();
     int trouve = 0;
-    printf("\ndonner le numero de la commande a supprimer: ");
+    printf("\nDonner le numero de la commande a supprimer: ");
     scanf("%d", &n);
     while (Pile->SommetC != NULL && trouve == 0)
     {
@@ -943,10 +956,12 @@ void SupprimerCommande(ComListe *Pile) //----suppression d'une coommande precis-
     {
         x = DepilerCommande(Pilei);
         EmpilerCom(Pile, x);
-    }
+    }}
+else printf("--Liste Vide--");
 }
 void ModifierCommande(ComListe *Pile, Aliste *ListArti)
 {
+    if (Pile->SommetC->suiv!=NULL || ListArti->Sommet->suiv!=NULL){
     ComListe *TempP = initComListe();
     Aliste *TempPile = initAliste();
     Commande x;
@@ -955,7 +970,7 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
     char test[20];
     int trouve;
     trouve = 0;
-    printf("donner le numero de commande que vous voulez changer: ");
+    printf("Donner le numero de commande que vous voulez changer: ");
     scanf("%d", &NCom);
     while (Pile->SommetC->suiv != NULL && trouve == 0)
     {
@@ -972,7 +987,7 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
     do
     {
         printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
-        printf("1-numero de la commande\n");
+        printf("1-Numero de la commande\n");
         printf("2-Liste des Articles\n");
         printf("3-Numero de la facture\n");
         printf("4-Date\n");
@@ -982,19 +997,19 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
         switch (n)
         {
         case 1:
-            printf("donner la nouveau numero de commande: \n");
+            printf("Donner le nouveau numero de commande: ");
             scanf("%d", &x.NCommande);
 
             break;
 
         case 2:
-            printf("\t\tQue voulez vous faire: \n");
-            printf("\t\t  Ajouter Article [1]\n");
-            printf("\t\t Supprimer Article [2]\n");
+            printf("Que voulez vous faire:\n");
+            printf("Ajouter Article [1] :\n");
+            printf("Supprimer Article [2] :\n");
             scanf("%d", &h);
             if (h == 1)
             {
-                printf("donner l'article que vous voulez ajouter a la commande: ");
+                printf("Donner l'article que vous voulez ajouter a la commande: ");
                 scanf("%s", &test);
                 trouve = 0;
                 while (x.ListeArticle->Sommet->suiv != NULL && trouve == 0)
@@ -1060,30 +1075,27 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
             break;
 
         case 3:
-            printf("donner le nouveau numero de facture: ");
-            scanf("%s", &x.NFacture);
+            printf("Donner le nouveau numero de facture:");
+            scanf("%d", &x.NFacture);
             break;
 
         case 4:
-            printf("donner la nouvelle Date:");
-            scanf("%d", &x.date.jj);
-            scanf("%d", &x.date.mm);
-            scanf("%d", &x.date.aaaa);
-
+            printf("Donner la nouvelle Date (jj/mm/aaaa): ");
+            scanf("%d/%d/%d", &x.date.jj,&x.date.mm,&x.date.aaaa);
             break;
 
         case 5:
-            printf("le nouveau montant HT:");
+            printf("Donner le nouveau montant HT: ");
             scanf("%d", x.MontantHT);
             x.MontantTTC = (x.MontantHT * 19) / 100 + x.MontantHT;
             break;
         case 6:
-            printf("le nouveau Type:");
+            printf("Donner le nouveau Type: (0->achat/1->vente) ");
             scanf("%d", x.Type);
             break;
 
         default:
-            printf("SVP choisir un numero de 1 a 6 !");
+            printf("!! choisissez un numero de 1 a 6 ");
             break;
         }
         printf("\n voulez vous faire un autre changement ?(Si oui tapez 1)");
@@ -1094,7 +1106,8 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
     {
         x = DepilerCommande(TempP);
         EmpilerCom(Pile, x);
-    }
+    }}
+else printf("--Liste Vide--");
 }
 
 ///////////////// ----------- Affichage Commande --------------------///////////////////
@@ -1339,25 +1352,28 @@ void main(){
     ComListe *Pile_cmd=initComListe();
     Pliste *File_per=initPListe();
     int Ncom;
+    system("title QuickSort");
     do{
     system("cls");
     P.Y=0;
-    P.X=48;
+    P.X=50;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-    printf("Welcome to QuickSort");
+    printf("Welcome to ");
+    printf("\033[1;31mQuick\033[0m");
+    printf("\033[1;36mSort\033[0m");
     P.Y=1;
     P.X=57;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
     P.Y=5;
-    P.X=53;
+    P.X=56;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
     printf("-MENU-");
     P.Y=7;
-    P.X=48;
+    P.X=50;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
     printf("-TRAITEMENT   [1]-");
     P.Y=10;
-    P.X=48;
+    P.X=50;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
     printf("-RECHERCHE    [2]-");
     P.Y=13;
@@ -1384,24 +1400,40 @@ void main(){
             P.Y=0;
             P.X=40;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-          printf("Veuillez choisir le type de votre traitement");
+            printf("Veuillez choisir le type de votre traitement");
             P.Y=5;
             P.X=49;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-            printf("-AJOUTER DES ARTICLE   [1]-");
+            printf("-AJOUTER DES ARTICLES    [1]-");
             P.Y=9;
             P.X=49;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-            printf("-AJOUTER UNE COMMANDE  [2]-");
+            printf("-AJOUTER DES COMMANDES   [2]-");
             P.Y=13;
             P.X=49;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-            printf("-RETOUR AU MENU        [3]-");
-            P.Y=19;
+            printf("-MODIFIER DES ARTICLES   [3]-");
+            P.Y=17;
+            P.X=49;
+            SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+            printf("-MODIFIER DES COMMANDES  [4]-");
+            P.Y=21;
+            P.X=49;
+            SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+            printf("-SUPPRIMER DES ARTICLES  [5]-");
+            P.Y=25;
+            P.X=49;
+            SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+            printf("-SUPPRIMER DES COMMANDES [6]-");
+            P.Y=29;
+            P.X=49;
+            SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+            printf("-RETOUR AU MENU          [7]-");
+            P.Y=34;
             P.X=3;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
             printf("-QUITTER [X]-");
-            P.Y=16;
+            P.Y=32;
             P.X=61;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
             R2=getch();
@@ -1409,7 +1441,11 @@ void main(){
           switch(R2){
                     case '1' : AjouArti(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
                     case '2' : do {system("cls");AjouCom(Pile_cmd,Pile,File_per);printf("-Ajouter une nouvelle commande (o/n): ");RC=getch();}while(RC=='o' || RC=='O');printf("\n\n RETOUR [o/n] "); R3=getch();system("cls");break;
-                    case '3' : R3='n';system("cls");break;
+                    case '3' : system("cls"); ModifierArt(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
+                    case '4' : system("cls"); SupprimerArticle(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
+                    case '5' : system("cls"); ModifierCommande(Pile_cmd,Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
+                    case '6' : system("cls"); SupprimerCommande(Pile_cmd); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
+                    case '7' : R3='n';system("cls");break;
                     case 'x' : R='n';break;
                     case 'X' : R='n';break;
                     default: R3='o';break;
