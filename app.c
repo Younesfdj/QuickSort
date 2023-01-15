@@ -153,7 +153,6 @@ void AjouArti(Aliste *Pile)
     do {
     system("cls");
     Article *new = malloc(sizeof(*new));
-    clear_input_buffer();
     printf("-Donner la Designation de cette article: ");
     gets(new->Designation);
     printf("-Entrer le prix: ");
@@ -174,6 +173,7 @@ void AjouArti(Aliste *Pile)
     }
     new->suiv = Pile->Sommet;
     Pile->Sommet = new;
+    clear_input_buffer();
     printf("-Ajouter un nouveau article (o/n): ");
     R=getch();
     }while(R=='o' || R=='O');
@@ -204,11 +204,9 @@ void ModifierArt(Aliste *Pile)
     Article x;
     int R, n;   // R pour test du boocle DO WHILE / n pout le test du switch
     char ND[5]; // ND variable intermediaire pour changement des chaines
-
     int trouve;
     char reference[20];
     trouve = 0;
-    clear_input_buffer();
     printf("Entrer la reference de l'article: ");
     gets(reference);
     while (Pile->Sommet->suiv != NULL && trouve == 0)
@@ -223,6 +221,7 @@ void ModifierArt(Aliste *Pile)
             EmpilerArti(TempP, x);
         }
     }
+    if (trouve==0) {printf("Cet article n'existe pas\n");goto Reconstruction;}
     do
     {
         printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
@@ -235,25 +234,25 @@ void ModifierArt(Aliste *Pile)
         switch (n)
         {
         case 1:
-            printf("donner la nouvelle quantite: \n");
+            printf("Donner la nouvelle quantite: \n");
             scanf("%d", &x.QTC);
 
             break;
 
         case 2:
-            printf("donner le nouveau Prix:");
+            printf("Donner le nouveau Prix:");
             scanf("%f", &x.Prix);
 
             break;
 
         case 3:
-            printf("donner la nouvelle Designation: ");
+            printf("Donner la nouvelle Designation: ");
             clear_input_buffer();
             gets(x.Designation);
             break;
 
         case 4:
-            printf("donner la nouvelle Date d'expiration:");
+            printf("Donner la nouvelle Date d'expiration:");
             scanf("%d", &x.date_per.jj);
             scanf("%d", &x.date_per.mm);
             scanf("%d", &x.date_per.aaaa);
@@ -281,6 +280,8 @@ void ModifierArt(Aliste *Pile)
         scanf("%d", &R);
     } while (R == 1);
     EmpilerArti(Pile, x);
+    Reconstruction :
+    clear_input_buffer();
     while (TempP->Sommet->suiv != NULL)
     {
         x = DepilerArticle(TempP);
@@ -295,7 +296,6 @@ void SupprimerArticle(Aliste *Pile) //----suppression d'un article precis---
     Article x;
     Aliste *Pilei = initAliste();
     int trouve = 0;
-    clear_input_buffer();
     printf("\nDonner la reference de l'article a supprimer: ");
     gets(D);
     while (Pile->Sommet != NULL && trouve == 0)
@@ -310,6 +310,7 @@ void SupprimerArticle(Aliste *Pile) //----suppression d'un article precis---
             EmpilerArti(Pilei, x);
         }
     }
+    if (trouve==0) printf("L'article saisie n'exsite pas\n");
     // --- PARTIE RECONSTRUCION ---
     while (Pilei->Sommet->suiv != NULL)
     {
@@ -932,7 +933,7 @@ void SupprimerCommande(ComListe *Pile) //----suppression d'une coommande precis-
     Commande x;
     ComListe *Pilei = initComListe();
     int trouve = 0;
-    printf("\nDonner le numero de la commande a supprimer: ");
+    printf("Donner le numero de la commande a supprimer: ");
     scanf("%d", &n);
     while (Pile->SommetC != NULL && trouve == 0)
     {
@@ -946,6 +947,7 @@ void SupprimerCommande(ComListe *Pile) //----suppression d'une coommande precis-
             EmpilerCom(Pilei, x);
         }
     }
+    if (trouve==0) printf("La commande n'existe pas\n");
     // --- PARTIE RECONSTRUCION ---
     while (Pilei->SommetC->suiv != NULL)
     {
@@ -956,7 +958,7 @@ else printf("--Liste Vide--");
 }
 void ModifierCommande(ComListe *Pile, Aliste *ListArti)
 {
-    if (Pile->SommetC->suiv!=NULL || ListArti->Sommet->suiv!=NULL){
+    if (Pile->SommetC->suiv!=NULL && ListArti->Sommet->suiv!=NULL){
     ComListe *TempP = initComListe();
     Aliste *TempPile = initAliste();
     Commande x;
@@ -979,6 +981,7 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
             EmpilerCom(TempP, x);
         }
     }
+    if (trouve==0){printf("La commande n'exsite pas\n"); goto Reconstruction;}
     do
     {
         printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
@@ -1097,6 +1100,7 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
         scanf("%d", &R);
     } while (R == 1);
     EmpilerCom(Pile, x);
+    Reconstruction :
     while (TempP->SommetC->suiv != NULL)
     {
         x = DepilerCommande(TempP);
@@ -1437,8 +1441,8 @@ void main(){
                     case '1' : AjouArti(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
                     case '2' : do {system("cls");AjouCom(Pile_cmd,Pile,File_per);printf("-Ajouter une nouvelle commande (o/n): ");RC=getch();}while(RC=='o' || RC=='O');printf("\n\n RETOUR [o/n] "); R3=getch();system("cls");break;
                     case '3' : system("cls"); ModifierArt(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
-                    case '4' : system("cls"); SupprimerArticle(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
-                    case '5' : system("cls"); ModifierCommande(Pile_cmd,Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
+                    case '4' : system("cls"); ModifierCommande(Pile_cmd,Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
+                    case '5' : system("cls"); SupprimerArticle(Pile); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
                     case '6' : system("cls"); SupprimerCommande(Pile_cmd); printf("\n\n RETOUR [o/n] "); R3=getch();system("cls"); break;
                     case '7' : R3='n';system("cls");break;
                     case 'x' : R='n';break;
