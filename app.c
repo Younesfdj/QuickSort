@@ -343,11 +343,11 @@ void affArtiList(Aliste *Pile)
             temp = DepilerArticle(Pile);
             if (temp.Critique == 1)
             {
-                printf("-Designation d'article :%s\n-Quantite dans le stock: %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article est critique\n", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+                printf("-Designation d'article :%s\n-Quantite : %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article est critique\n", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
             }
             else if (temp.Critique == 0)
             {
-                printf("-Designation d'article :%s\n-Quantite dans le stock: %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article n'est pas critique\n", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+                printf("-Designation d'article :%s\n-Quantite : %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article n'est pas critique\n", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
             }
             EmpilerArti(TempPile, temp);
             getch();
@@ -359,51 +359,62 @@ void affArtiList(Aliste *Pile)
         }
     }
     else
-        printf("--VIDE--");
+        printf("--Liste Vide--");
 }
 
 // AFFICHAGE DES ARTICLES CRITIQUES
 void AffArtCrit(Aliste *Pile)
 {
-    Aliste *TempPile = initAliste();
-    Article temp;
+    if (Pile->Sommet->suiv != NULL)
+    {
+        Aliste *TempPile = initAliste();
+        Article temp;
 
-    while (Pile->Sommet->suiv != NULL) // affichage
-    {
-        temp = DepilerArticle(Pile);
-        if (temp.Critique == 1)
+        while (Pile->Sommet->suiv != NULL) // affichage
         {
-            printf("\n%s\tQTC:%d\tPrix:%.2fda  Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            temp = DepilerArticle(Pile);
+            if (temp.Critique == 1)
+            {
+                printf("-Designation d'article :%s\n-Quantite dans le stock: %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article est critique\n", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+                getch();
+            }
+            EmpilerArti(TempPile, temp);
         }
-        EmpilerArti(TempPile, temp);
+        while (TempPile->Sommet->suiv != NULL)
+        {
+            temp = DepilerArticle(TempPile);
+            EmpilerArti(Pile, temp);
+        }
     }
-    while (TempPile->Sommet->suiv != NULL)
-    {
-        temp = DepilerArticle(TempPile);
-        EmpilerArti(Pile, temp);
-    }
+    else
+        printf("--Liste Vide--");
 }
 
 // AFFICHAGE DES ARTICLES NON CRITIQUES
 void AffArtNonCrit(Aliste *Pile)
 {
-    Aliste *TempPile = initAliste();
-    Article temp;
+    if (Pile->Sommet->suiv != NULL)
+    {
+        Aliste *TempPile = initAliste();
+        Article temp;
 
-    while (Pile->Sommet->suiv != NULL) // affichage
-    {
-        temp = DepilerArticle(Pile);
-        if (temp.Critique == 0)
+        while (Pile->Sommet->suiv != NULL) // affichage
         {
-            printf("\n%s\tQTC:%d\tPrix:%.2fda Date %d/%d/%d", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            temp = DepilerArticle(Pile);
+            if (temp.Critique == 0)
+            {
+                printf("-Designation d'article :%s\n-Quantite dans le stock: %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article est non-critique\n", temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            }
+            EmpilerArti(TempPile, temp);
         }
-        EmpilerArti(TempPile, temp);
+        while (TempPile->Sommet->suiv != NULL)
+        {
+            temp = DepilerArticle(TempPile);
+            EmpilerArti(Pile, temp);
+        }
     }
-    while (TempPile->Sommet->suiv != NULL)
-    {
-        temp = DepilerArticle(TempPile);
-        EmpilerArti(Pile, temp);
-    }
+    else
+        printf("--Liste Vide--");
 }
 
 //////////////////------------ Rechereche par caractéristiques-------------////////////
@@ -561,24 +572,21 @@ void Affiche_arti_exp(Aliste *P)
 //---------------------------------- Crud Personne -------------------------------------//
 void AjouPer(Pliste *P)
 {
-
     Personne *new = malloc(sizeof(*new));
     if (P->TeteP->ID == 0)
     {
-        printf("ID: ");
+        printf("-ID: ");
         scanf("%d", &new->ID);
-        printf("Nom: ");
+        printf("-Nom: ");
         clear_input_buffer();
         gets(new->Nom);
-        printf("Prenom: ");
-        clear_input_buffer();
+        printf("-Prenom: ");
         gets(new->Prenom);
-        printf("Addresse: ");
-        clear_input_buffer();
+        printf("-Addresse: ");
         gets(new->Adresse);
-        printf("Phone: ");
+        printf("-Phone: ");
         scanf("%d", &new->Phone);
-        printf("Etat (client [1]  fournisseur [2]  diver [3]) : ");
+        printf("-Etat (client [1]  fournisseur [2]  diver [3]) : ");
         scanf("%d", &new->Etat);
         new->NBCom = 0;
         new->suiv = P->TeteP;
@@ -588,20 +596,18 @@ void AjouPer(Pliste *P)
     }
     if (P->TeteP->ID != 0)
     {
-        printf("ID:");
+        printf("-ID:");
         scanf("%d", &new->ID);
-        printf("Nom: ");
+        printf("-Nom: ");
         clear_input_buffer();
         gets(new->Nom);
-        printf("Prenom: ");
-        clear_input_buffer();
+        printf("-Prenom: ");
         gets(new->Prenom);
-        printf("Addresse: ");
-        clear_input_buffer();
+        printf("-Addresse: ");
         gets(new->Adresse);
-        printf("Phone: ");
+        printf("-Phone: ");
         scanf("%d", &new->Phone);
-        printf("Etat:   client [1]  fournisseur [2]  diver [3]");
+        printf("-Etat   (client [1]  fournisseur [2]  diver [3]) : ");
         scanf("%d", &new->Etat);
         new->NBCom = 0;
         new->suiv = P->QueueP->suiv;
@@ -660,132 +666,37 @@ Personne DefilerPer(Pliste *F)
 }
 void SupprimerPersonne(Pliste *File) //----suppression d'une Personne precis---
 {
-    int n;
-    Personne x;
-    Pliste *Filei = initPListe();
-    int trouve = 0;
-    printf("\ndonner ID de la personne qui vous voulez supprimer: ");
-    scanf("%d", &n);
-    while (File->TeteP->suiv != NULL && trouve == 0)
-    {
-        x = DefilerPer(File);
-        if (x.ID == n)
-        {
-            trouve = 1;
-        }
-        else
-        {
-            EnfilerPer(Filei, x);
-        }
-    }
-    // --- PARTIE RECONSTRUCION ---
-    while (Filei->TeteP->suiv != NULL)
-    {
-        x = DefilerPer(Filei);
-        EnfilerPer(File, x);
-    }
-}
-void ModifierPer(Pliste *File)
-{
     if (File->TeteP->suiv != NULL)
     {
-        Pliste *TempP = initPListe();
+        int n;
         Personne x;
-        int R, n, k; // R pour test du boocle DO WHILE / n pout le test du switch
-        char ND[5];  // ND variable intermediaire pour changement des chaines
-        int trouve;
-        char reference[20];
-        trouve = 0;
-        printf("Entrer l'ID recherche: ");
-        scanf("%d", &k);
+        Pliste *Filei = initPListe();
+        int trouve = 0;
+        printf("\nDonner ID de la personne qui vous voulez supprimer: ");
+        scanf("%d", &n);
         while (File->TeteP->suiv != NULL && trouve == 0)
         {
             x = DefilerPer(File);
-            if (x.ID == k)
+            if (x.ID == n)
             {
                 trouve = 1;
             }
             else
             {
-                EnfilerPer(TempP, x);
+                EnfilerPer(Filei, x);
             }
         }
-        if (trouve == 0)
+        // --- PARTIE RECONSTRUCION ---
+        while (Filei->TeteP->suiv != NULL)
         {
-            printf("Cet article n'existe pas\n");
-            goto Reconstruction;
-        }
-        do
-        {
-            printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
-            printf("1-ID\n");
-            printf("2-Nom\n");
-            printf("3-Prenom\n");
-            printf("4-Phone\n");
-            printf("5-Adresse\n");
-            printf("6-Etat\n");
-            printf("7-Nombre de commande\n");
-            scanf("%d", &n);
-            switch (n)
-            {
-            case 1:
-                printf("Donner le nouveau ID: ");
-                scanf("%d", &x.ID);
-
-                break;
-
-            case 2:
-                printf("Donner le nouveau Nom: ");
-                clear_input_buffer();
-                gets(x.Nom);
-
-                break;
-
-            case 3:
-                printf("Donner le nouveau Prenom: ");
-                clear_input_buffer();
-                gets(x.Prenom);
-                break;
-
-            case 4:
-                printf("Donner le nouveau numero de telephone: ");
-                scanf("%d", &x.Phone);
-
-                break;
-
-            case 5:
-                printf("Donner la nouvelle adresse: ");
-                clear_input_buffer();
-                gets(x.Adresse);
-                break;
-            case 6:
-                printf("Donner le nouveau Etat: ");
-                scanf("%d", &x.Etat);
-
-                break;
-            case 7:
-                printf("Donner le nouveau Nombre de commandes: ");
-                scanf("%d", &x.NBCom);
-                break;
-            default:
-                printf("!! Choisissez un chiffre de 1 a 7 ! ");
-                break;
-            }
-            printf("\nvoulez vous faire un autre changement ? (1->oui , 2->non): ");
-            scanf("%d", &R);
-        } while (R == 1);
-        EnfilerPer(File, x);
-    Reconstruction:
-        clear_input_buffer();
-        while (TempP->TeteP->suiv != NULL)
-        {
-            x = DefilerPer(TempP);
+            x = DefilerPer(Filei);
             EnfilerPer(File, x);
         }
     }
     else
         printf("--Liste Vide--");
 }
+
 // ----------------------------------- Crud Commande -----------------------------------//
 
 void EmpilerCom(ComListe *P, Commande NewCom)
@@ -846,6 +757,7 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
             {
                 printf("Cet client n'existe pas\najout de cet client en cours ...\n");
                 AjouPer(ListP);
+                TC = 1;
             }
         } while (TC == 0);
         new->IDclient = NC;
@@ -861,8 +773,9 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
         {
             do
             {
-                printf("donner l'article que vous voulez ajouter a la commande: ");
-                scanf("%s", &test);
+                clear_input_buffer();
+                printf("Donner l'article que vous voulez ajouter a la commande: ");
+                gets(test);
                 trouve = 0;
                 while (ListArti->Sommet->suiv != NULL && trouve == 0)
                 {
@@ -914,7 +827,7 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                     EmpilerArti(ListArti, x);
                     EmpilerArti(new->ListeArticle, y);
                 }
-                printf("voulez-vous ajouter un autre article ?(1-oui / 2-non) :");
+                printf("Voulez-vous ajouter un autre article ?(1-oui / 2-non) :");
                 scanf("%d", &R);
             } while (R == 1);
         }
@@ -922,8 +835,9 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
         {
             do
             {
-                printf("donner l'article que vous voulez ajouter a la commande: ");
-                scanf("%s", &test);
+                clear_input_buffer();
+                printf("Donner l'article que vous voulez ajouter a la commande: ");
+                gets(test);
                 trouve = 0;
                 while (ListArti->Sommet->suiv != NULL && trouve == 0)
                 {
@@ -978,12 +892,14 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                     x = DepilerArticle(TempPile);
                     EmpilerArti(ListArti, x);
                 }
-                printf("voulez-vous ajouter un autre article ?(1-oui / 2-non)");
+                printf("Voulez-vous ajouter un autre article ?(1-oui / 2-non) ");
                 scanf("%d", &R);
+                if (R == 1)
+                    goto boucle;
                 if (new->ListeArticle->Sommet->suiv == NULL)
                 {
-                    printf("!!ERREUR!! :veuillez ajouter au moins un article pour completer cette commande.\n");
-                    printf("Voulez vous annuler cette commande ?(1-oui / 2-non)");
+                    printf("!!ERREUR!! veuillez ajouter au moins un article pour completer cette commande.\n");
+                    printf("Voulez vous annuler cette commande ?(1-oui / 2-non) ");
                     scanf("%d", &gg);
                     if (gg == 1)
                     {
@@ -1009,7 +925,7 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                         R = 1;
                     }
                 }
-
+            boucle:;
             } while (R == 1);
         }
         new->MontantHT = 0;                             // initialisation du montant Ht a 0
@@ -1241,6 +1157,108 @@ void ModifierCommande(ComListe *Pile, Aliste *ListArti)
         {
             x = DepilerCommande(TempP);
             EmpilerCom(Pile, x);
+        }
+    }
+    else
+        printf("--Liste Vide--");
+}
+
+void ModifierPer(Pliste *File)
+{
+    if (File->TeteP->suiv != NULL)
+    {
+        Pliste *TempP = initPListe();
+        Personne x;
+        int R, n, k; // R pour test du boocle DO WHILE / n pout le test du switch
+        char ND[5];  // ND variable intermediaire pour changement des chaines
+        int trouve;
+        char reference[20];
+        trouve = 0;
+        printf("Entrer l'ID recherche: ");
+        scanf("%d", &k);
+        while (File->TeteP->suiv != NULL && trouve == 0)
+        {
+            x = DefilerPer(File);
+            if (x.ID == k)
+            {
+                trouve = 1;
+            }
+            else
+            {
+                EnfilerPer(TempP, x);
+            }
+        }
+        if (trouve == 0)
+        {
+            printf("Cette personne n'existe pas\n");
+            goto Reconstruction;
+        }
+        do
+        {
+            printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
+            printf("1-ID\n");
+            printf("2-Nom\n");
+            printf("3-Prenom\n");
+            printf("4-Phone\n");
+            printf("5-Adresse\n");
+            printf("6-Etat (client [1]  fournisseur [2]  diver [3])\n");
+            printf("7-Nombre de commande\n");
+            scanf("%d", &n);
+            switch (n)
+            {
+            case 1:
+                printf("Donner le nouveau ID: ");
+                scanf("%d", &x.ID);
+
+                break;
+
+            case 2:
+                printf("Donner le nouveau Nom: ");
+                clear_input_buffer();
+                gets(x.Nom);
+
+                break;
+
+            case 3:
+                printf("Donner le nouveau Prenom: ");
+                clear_input_buffer();
+                gets(x.Prenom);
+                break;
+
+            case 4:
+                printf("Donner le nouveau numero de telephone: ");
+                scanf("%d", &x.Phone);
+
+                break;
+
+            case 5:
+                printf("Donner la nouvelle adresse: ");
+                clear_input_buffer();
+                gets(x.Adresse);
+                break;
+            case 6:
+                printf("Donner le nouveau Etat: ");
+                scanf("%d", &x.Etat);
+
+                break;
+            case 7:
+                printf("Donner le nouveau Nombre de commandes: ");
+                scanf("%d", &x.NBCom);
+                break;
+            default:
+                printf("!! Choisissez un chiffre de 1 a 7 ! ");
+                break;
+            }
+            printf("\nvoulez vous faire un autre changement ? (1->oui , 2->non): ");
+            scanf("%d", &R);
+        } while (R == 1);
+        EnfilerPer(File, x);
+    Reconstruction:
+        clear_input_buffer();
+        while (TempP->TeteP->suiv != NULL)
+        {
+            x = DefilerPer(TempP);
+            EnfilerPer(File, x);
         }
     }
     else
@@ -1481,7 +1499,6 @@ void PireClient(Pliste *F)
             }
             EnfilerPer(tempP, y);
         }
-
         while (F->TeteP->suiv != NULL)
         {
             x = DefilerPer(F);
@@ -1506,7 +1523,7 @@ void PireClient(Pliste *F)
 //----------------------------------------- MAIN -----------------------------------//
 void main()
 {
-    char R = 'o', R1, R2, R3, RQ, RC = 'n';
+    char R = 'o', R1, R2, R3, RQ, RC = 'n', G, GR;
     COORD P;
     Aliste *Pile = initAliste();
     ComListe *Pile_cmd = initComListe();
@@ -1544,7 +1561,7 @@ void main()
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
         printf("-STATISTIQUE  [4]-");
         P.Y = 21;
-        P.X = 3;
+        P.X = 1;
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
         printf("-QUITTER [X]-");
         P.Y = 19;
@@ -1567,36 +1584,24 @@ void main()
                 P.Y = 5;
                 P.X = 49;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-AJOUTER DES ARTICLES    [1]-");
+                printf("-GESTTION DES ARTICLES   [1]-");
                 P.Y = 9;
                 P.X = 49;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-AJOUTER DES COMMANDES   [2]-");
+                printf("-GESTION DES COMMANDES   [2]-");
                 P.Y = 13;
                 P.X = 49;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-MODIFIER DES ARTICLES   [3]-");
+                printf("-GESTION DES PERSONNES   [3]-");
                 P.Y = 17;
                 P.X = 49;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-MODIFIER DES COMMANDES  [4]-");
-                P.Y = 21;
-                P.X = 49;
-                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-SUPPRIMER DES ARTICLES  [5]-");
-                P.Y = 25;
-                P.X = 49;
-                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-SUPPRIMER DES COMMANDES [6]-");
-                P.Y = 29;
-                P.X = 49;
-                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-RETOUR AU MENU          [7]-");
-                P.Y = 34;
-                P.X = 3;
+                printf("-RETOUR AU MENU          [4]-");
+                P.Y = 24;
+                P.X = 1;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
                 printf("-QUITTER [X]-");
-                P.Y = 32;
+                P.Y = 20;
                 P.X = 61;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
                 R2 = getch();
@@ -1604,52 +1609,190 @@ void main()
                 switch (R2)
                 {
                 case '1':
-                    AjouArti(Pile);
-                    printf("\n\n RETOUR [o/n] ");
-                    R3 = getch();
-                    system("cls");
-                    break;
-                case '2':
+                    GR = 'n';
                     do
                     {
                         system("cls");
-                        AjouCom(Pile_cmd, Pile, File_per);
-                        printf("-Ajouter une nouvelle commande (o/n): ");
-                        RC = getch();
-                    } while (RC == 'o' || RC == 'O');
-                    printf("\n\n RETOUR [o/n] ");
-                    R3 = getch();
-                    system("cls");
+                        P.Y = 0;
+                        P.X = 40;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("Veuillez choisir le type de votre traitement");
+                        P.Y = 5;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-AJOUTER DES ARTICLES    [1]-");
+                        P.Y = 9;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-MODIFIER DES ARTICLES   [2]-");
+                        P.Y = 13;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-SUPPRIMMR DES ARTICLES  [3]-");
+                        P.Y = 17;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-RETOUR EN ARRIERE       [4]");
+                        P.Y = 21;
+                        P.X = 61;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        G = getch();
+                        switch (G)
+                        {
+                        case '1':
+                            AjouArti(Pile);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '2':
+                            system("cls");
+                            ModifierArt(Pile);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '3':
+                            system("cls");
+                            SupprimerArticle(Pile);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '4':
+                            GR = 'n';
+                            R3 = 'o';
+                            system("cls");
+                            break;
+                        }
+                    } while (GR == 'O' || GR == 'o');
+                    break;
+                case '2':
+                    GR = 'n';
+                    do
+                    {
+                        system("cls");
+                        P.Y = 0;
+                        P.X = 40;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("Veuillez choisir le type de votre traitement");
+                        P.Y = 5;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-AJOUTER DES COMMANDES    [1]-");
+                        P.Y = 9;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-MODIFIER DES COMMANDES   [2]-");
+                        P.Y = 13;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-SUPPRIMMR DES COMMANDES  [3]-");
+                        P.Y = 17;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-RETOUR EN ARRIERE        [4]");
+                        P.Y = 21;
+                        P.X = 61;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        G = getch();
+                        switch (G)
+                        {
+                        case '1':
+                            do
+                            {
+                                system("cls");
+                                AjouCom(Pile_cmd, Pile, File_per);
+                                printf("-Ajouter une nouvelle commande (o/n): ");
+                                RC = getch();
+                            } while (RC == 'o' || RC == 'O');
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '2':
+                            system("cls");
+                            ModifierCommande(Pile_cmd, Pile);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '3':
+                            system("cls");
+                            SupprimerCommande(Pile_cmd);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '4':
+                            GR = 'n';
+                            R3 = 'o';
+                            system("cls");
+                            break;
+                        }
+                    } while (GR == 'O' || GR == 'o');
                     break;
                 case '3':
-                    system("cls");
-                    ModifierArt(Pile);
-                    printf("\n\n RETOUR [o/n] ");
-                    R3 = getch();
-                    system("cls");
+                    GR = 'n';
+                    do
+                    {
+                        system("cls");
+                        P.Y = 0;
+                        P.X = 40;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("Veuillez choisir le type de votre traitement");
+                        P.Y = 5;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-AJOUTER DES PERSONNES    [1]-");
+                        P.Y = 9;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-MODIFIER DES PERSONNES   [2]-");
+                        P.Y = 13;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-SUPPRIMMR DES PERSONNES  [3]-");
+                        P.Y = 17;
+                        P.X = 49;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        printf("-RETOUR EN ARRIERE        [4]");
+                        P.Y = 21;
+                        P.X = 61;
+                        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                        G = getch();
+                        switch (G)
+                        {
+                        case '1':
+                            system("cls");
+                            AjouPer(File_per);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '2':
+                            system("cls");
+                            ModifierPer(File_per);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '3':
+                            system("cls");
+                            SupprimerPersonne(File_per);
+                            printf("\n\n RETOUR [o/n] ");
+                            GR = getch();
+                            system("cls");
+                            break;
+                        case '4':
+                            GR = 'n';
+                            R3 = 'o';
+                            system("cls");
+                            break;
+                        }
+                    } while (GR == 'O' || GR == 'o');
                     break;
                 case '4':
-                    system("cls");
-                    ModifierCommande(Pile_cmd, Pile);
-                    printf("\n\n RETOUR [o/n] ");
-                    R3 = getch();
-                    system("cls");
-                    break;
-                case '5':
-                    system("cls");
-                    SupprimerArticle(Pile);
-                    printf("\n\n RETOUR [o/n] ");
-                    R3 = getch();
-                    system("cls");
-                    break;
-                case '6':
-                    system("cls");
-                    SupprimerCommande(Pile_cmd);
-                    printf("\n\n RETOUR [o/n] ");
-                    R3 = getch();
-                    system("cls");
-                    break;
-                case '7':
                     R3 = 'n';
                     system("cls");
                     break;
@@ -1692,7 +1835,7 @@ void main()
                 P.Y = 21;
                 P.X = 41;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-RETOUR AU MENU [5]-");
+                printf("-RETOUR AU MENU         [5]-");
                 P.Y = 25;
                 P.X = 1;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
@@ -1759,28 +1902,32 @@ void main()
                 P.Y = 5;
                 P.X = 44;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-AFFICHER TOUS LES ARTICLES    [1]-");
+                printf("-AFFICHER TOUS LES ARTICLES           [1]-");
                 P.Y = 9;
                 P.X = 44;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-AFFICHER LES PRODUITS EXPIRES [2]-");
+                printf("-AFFICHER LES PRODUITS EXPIRES        [2]-");
                 P.Y = 13;
                 P.X = 44;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-AFFICHER TOUS LES COMMANDES   [3]-");
+                printf("-AFFICHER TOUS LES COMMANDES          [3]-");
                 P.Y = 17;
                 P.X = 44;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-AFFICHER UNE COMMANDE DONNEE  [4]-");
+                printf("-AFFICHER UNE COMMANDE DONNEE         [4]-");
                 P.Y = 21;
                 P.X = 44;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-                printf("-RETOUR AU MENU [5]-");
+                printf("-AFFICHAGE DES CONSOMMABLES CRITIQUES [5]-");
                 P.Y = 25;
+                P.X = 44;
+                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
+                printf("-RETOUR AU MENU [6]-");
+                P.Y = 27;
                 P.X = 1;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
                 printf("-QUITTER [X]-");
-                P.Y = 23;
+                P.Y = 27;
                 P.X = 54;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
                 R2 = getch();
@@ -1813,6 +1960,12 @@ void main()
                     R3 = getch();
                     break;
                 case '5':
+                    system("cls");
+                    AffArtCrit(Pile);
+                    printf("\n\n RETOUR [o/n] ");
+                    R3 = getch();
+                    break;
+                case '6':
                     R = 'o';
                     R3 = 'n';
                     system("cls");
@@ -1856,7 +2009,7 @@ void main()
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
                 printf("-RETOUR AU MENU                            [4]-");
                 P.Y = 22;
-                P.X = 3;
+                P.X = 1;
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
                 printf("-QUITTER [X]-");
                 P.Y = 20;
