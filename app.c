@@ -1514,8 +1514,28 @@ void PireClient(Pliste *F)
             x = DefilerPer(tempP);
             EnfilerPer(F, x);
         }
-
-        printf("\nle Pire Client est: %s %s", &z.Nom, &z.Prenom);
+        if (trouve == 0)
+        {
+            printf("--La files ne contient pas des clients pour tester !--");
+        }
+        else
+        {
+            printf("\nPires Client : ");
+            while (F->TeteP->suiv != NULL)
+            {
+                x = DefilerPer(F);
+                if (x.Etat == 1 && x.NBCom == z.NBCom)
+                {
+                    printf("\n- %s %s", &x.Nom, &x.Prenom);
+                }
+                EnfilerPer(tempP, x);
+            }
+            while (tempP->TeteP->suiv != NULL)
+            {
+                x = DefilerPer(tempP);
+                EnfilerPer(F, x);
+            }
+        }
     }
     else
         printf("--Liste Vide--");
