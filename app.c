@@ -331,11 +331,11 @@ void affArtiList(Aliste *Pile)
         temp = DepilerArticle(Pile);
         if (temp.Critique == 1)
         {
-            printf("-Designation d'article :%s\n-Quantite dans le stock: %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article est critique\n",temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            printf("-Designation d'article :%s\n-Quantite : %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article est critique\n",temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
         }
         else if (temp.Critique == 0)
         {
-            printf("-Designation d'article :%s\n-Quantite dans le stock: %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article n'est pas critique\n",temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
+            printf("-Designation d'article :%s\n-Quantite : %d\n-Prix de l'article: %.2f\n-Date de peremption: %d/%d/%d\n-Cet article n'est pas critique\n",temp.Designation, temp.QTC, temp.Prix, temp.date_per.jj, temp.date_per.mm, temp.date_per.aaaa);
         }
         EmpilerArti(TempPile, temp);
         getch();
@@ -550,10 +550,8 @@ void AjouPer(Pliste *P)
         clear_input_buffer();
         gets(new->Nom);
         printf("-Prenom: ");
-        clear_input_buffer();
         gets(new->Prenom);
         printf("-Addresse: ");
-        clear_input_buffer();
         gets(new->Adresse);
         printf("-Phone: ");
         scanf("%d", &new->Phone);
@@ -573,14 +571,12 @@ void AjouPer(Pliste *P)
         clear_input_buffer();
         gets(new->Nom);
         printf("-Prenom: ");
-        clear_input_buffer();
         gets(new->Prenom);
         printf("-Addresse: ");
-        clear_input_buffer();
         gets(new->Adresse);
         printf("-Phone: ");
         scanf("%d", &new->Phone);
-        printf("-Etat:   client [1]  fournisseur [2]  diver [3]");
+        printf("-Etat   (client [1]  fournisseur [2]  diver [3]) : ");
         scanf("%d", &new->Etat);
         new->NBCom = 0;
         new->suiv = P->QueueP->suiv;
@@ -726,6 +722,7 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
         {
             printf("Cet client n'existe pas\najout de cet client en cours ...\n");
             AjouPer(ListP);
+            TC=1;
         }
     } while (TC == 0);
     new->IDclient = NC;
@@ -741,8 +738,9 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
     {
         do
         {
-            printf("donner l'article que vous voulez ajouter a la commande: ");
-            scanf("%s", &test);
+            clear_input_buffer();
+            printf("Donner l'article que vous voulez ajouter a la commande: ");
+            gets(test);
             trouve = 0;
             while (ListArti->Sommet->suiv != NULL && trouve == 0)
             {
@@ -794,7 +792,7 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                 EmpilerArti(ListArti, x);
                 EmpilerArti(new->ListeArticle, y);
             }
-            printf("voulez-vous ajouter un autre article ?(1-oui / 2-non) :");
+            printf("Voulez-vous ajouter un autre article ?(1-oui / 2-non) :");
             scanf("%d", &R);
         } while (R == 1);
     }
@@ -802,8 +800,9 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
     {
         do
         {
-            printf("donner l'article que vous voulez ajouter a la commande: ");
-            scanf("%s", &test);
+            clear_input_buffer();
+            printf("Donner l'article que vous voulez ajouter a la commande: ");
+            gets(test);
             trouve = 0;
             while (ListArti->Sommet->suiv != NULL && trouve == 0)
             {
@@ -858,12 +857,13 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                 x = DepilerArticle(TempPile);
                 EmpilerArti(ListArti, x);
             }
-            printf("voulez-vous ajouter un autre article ?(1-oui / 2-non)");
+            printf("Voulez-vous ajouter un autre article ?(1-oui / 2-non) ");
             scanf("%d", &R);
+            if (R==1) goto boucle;
             if (new->ListeArticle->Sommet->suiv == NULL)
             {
-                printf("!!ERREUR!! :veuillez ajouter au moins un article pour completer cette commande.\n");
-                printf("Voulez vous annuler cette commande ?(1-oui / 2-non)");
+                printf("!!ERREUR!! veuillez ajouter au moins un article pour completer cette commande.\n");
+                printf("Voulez vous annuler cette commande ?(1-oui / 2-non) ");
                 scanf("%d", &gg);
                 if (gg == 1)
                 {
@@ -889,7 +889,7 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                     R = 1;
                 }
             }
-
+            boucle:;
         } while (R == 1);
     }
     new->MontantHT = 0;                             // initialisation du montant Ht a 0
@@ -1142,7 +1142,7 @@ void ModifierPer(Pliste *File)
         }
         if (trouve == 0)
         {
-            printf("Cet article n'existe pas\n");
+            printf("Cette personne n'existe pas\n");
             goto Reconstruction;
         }
         do
@@ -1442,13 +1442,13 @@ void PireClient(Pliste *F)
         }
         EnfilerPer(tempP, x);
     }
+    EnfilerPer(F,y);
     while (tempP->TeteP->suiv != NULL)
     {
         x = DefilerPer(tempP);
         EnfilerPer(F, x);
     }
-    EnfilerPer(F, y);
-    printf("\nle Pire Client est: %s %s", &z.Nom, &z.Prenom);}
+    printf("\nLe Pire Client est: %s %s", &z.Nom, &z.Prenom);}
 else printf("--Liste Vide--");
 }
 //----------------------------------------- MAIN -----------------------------------//
@@ -1673,16 +1673,12 @@ void main(){
             P.Y=21;
             P.X=41;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-            printf("-AFFICHAGE DES CONSOMMABLES CRITIQUES           [5]-");
-            P.Y=24;
-            P.X=41;
-            SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
-            printf("-RETOUR AU MENU [6]-");
-            P.Y=29;
+            printf("-RETOUR AU MENU         [5]-");
+            P.Y=25;
             P.X=1;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
             printf("-QUITTER [X]-");
-            P.Y=26;
+            P.Y=23;
             P.X=54;
             SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), P);
             R2=getch();
@@ -1691,8 +1687,7 @@ void main(){
             case '2' : system("cls");Rech_carac(Pile,'2');printf("\n\n RETOUR [o/n] ");R3=getch(); break;
             case '3' : system("cls");printf("Entrer le Numero de commande :");scanf("%d",&Ncom);Rech_par_cmd(Pile_cmd,Ncom);printf("\n\n RETOUR [o/n] ");R3=getch(); break;
             case '4' : system("cls");Rech_par_client(Pile_cmd);printf("\n\n RETOUR [o/n] ");R3=getch(); break;
-            case '5' : break;
-            case '6' : R='o';R3='n';system("cls"); break;
+            case '5' : R='o';R3='n';system("cls"); break;
             case 'x' : R='n';R3='n'; break;
             case 'X' : R='n';R3='n'; break;
             default : R3='o'; break;
