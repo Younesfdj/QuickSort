@@ -1241,7 +1241,7 @@ void PireClient(Pliste *F)
     while (F->TeteP->suiv != NULL && trouve == 0)
     {
         y = DefilerPer(F);
-        if (y.Etat == 0)
+        if (y.Etat == 1)
         {
             z = y;
             trouve = 1;
@@ -1251,19 +1251,120 @@ void PireClient(Pliste *F)
     while (F->TeteP->suiv != NULL)
     {
         x = DefilerPer(F);
-        if (x.Etat == 0 && z.NBCom > x.NBCom)
+        if (x.Etat == 1 && z.NBCom > x.NBCom)
         {
             z = x;
         }
         EnfilerPer(tempP, x);
     }
+    EnfilerPer(F, y);
     while (tempP->TeteP->suiv != NULL)
     {
         x = DefilerPer(tempP);
         EnfilerPer(F, x);
     }
-    EnfilerPer(F, y);
     printf("\nle Pire Client est: %s %s", &z.Nom, &z.Prenom);
+}
+void ModifierPer(Pliste *File)
+{
+    if (File->TeteP->suiv != NULL)
+    {
+        Pliste *TempP = initPListe();
+        Personne x;
+        int R, n, k; // R pour test du boocle DO WHILE / n pout le test du switch
+        char ND[5];  // ND variable intermediaire pour changement des chaines
+        int trouve;
+        char reference[20];
+        trouve = 0;
+        printf("Entrer l'ID recherche: ");
+        scanf("%d", &k);
+        while (File->TeteP->suiv != NULL && trouve == 0)
+        {
+            x = DefilerPer(File);
+            if (x.ID == k)
+            {
+                trouve = 1;
+            }
+            else
+            {
+                EnfilerPer(TempP, x);
+            }
+        }
+        if (trouve == 0)
+        {
+            printf("Cet article n'existe pas\n");
+            goto Reconstruction;
+        }
+        do
+        {
+            printf("\nQue voulez vous modifier ?(choisissez par numero)\n");
+            printf("1-ID\n");
+            printf("2-Nom\n");
+            printf("3-Prenom\n");
+            printf("4-Phone\n");
+            printf("5-Adresse\n");
+            printf("6-Etat\n");
+            printf("7-Nombre de commande\n");
+            scanf("%d", &n);
+            switch (n)
+            {
+            case 1:
+                printf("Donner le nouveau ID: ");
+                scanf("%d", &x.ID);
+
+                break;
+
+            case 2:
+                printf("Donner le nouveau Nom: ");
+                clear_input_buffer();
+                gets(x.Nom);
+
+                break;
+
+            case 3:
+                printf("Donner le nouveau Prenom: ");
+                clear_input_buffer();
+                gets(x.Prenom);
+                break;
+
+            case 4:
+                printf("Donner le nouveau numero de telephone: ");
+                scanf("%d", &x.Phone);
+
+                break;
+
+            case 5:
+                printf("Donner la nouvelle adresse: ");
+                clear_input_buffer();
+                gets(x.Adresse);
+                break;
+            case 6:
+                printf("Donner le nouveau Etat: ");
+                scanf("%d", &x.Etat);
+
+                break;
+            case 7:
+                printf("Donner le nouveau Nombre de commandes: ");
+                scanf("%d", &x.NBCom);
+                break;
+            default:
+                printf("!! Choisissez un chiffre de 1 a 7 ! ");
+                break;
+            }
+            printf("\nvoulez vous faire un autre changement ? (1->oui , 2->non): ");
+            scanf("%d", &R);
+        } while (R == 1);
+        EnfilerPer(File, x);
+    Reconstruction:
+        clear_input_buffer();
+        while (TempP->TeteP->suiv != NULL)
+        {
+            x = DefilerPer(TempP);
+            EnfilerPer(File, x);
+        }
+    }
+    else
+        printf("--Liste Vide--");
 }
 //----------------------------------------- MAIN -----------------------------------//
 void main()
@@ -1357,21 +1458,28 @@ void main()
 
     affArtiList(AA);
     // AjouArti(AA);
+    AjouPer(PP);
+    AjouPer(PP);
+    AjouPer(PP);
+    ModifierPer(PP);
+    ModifierPer(PP);
+    ModifierPer(PP);
+    PireClient(PP);
 
     // ModifierArt(AA, "iPhoneXS");
     // affArtiList(AA);
     //  SupprimerArticle(AA);
 
     // AjouPer(PP);
-    AjouCom(CC, AA, PP);
-    AffComList(CC);
+    // AjouCom(CC, AA, PP);
+    // AffComList(CC);
     printf("\n");
     // ArtPlusVendu(AA);
-    printf("\n");
-    affArtiList(AA);
-    printf("\n");
-    Rech_par_cmd(CC, 1);
+    // printf("\n");
+    // affArtiList(AA);
+    // printf("\n");
+    // Rech_par_cmd(CC, 1);
     printf("\n");
     // Rech_par_client(CC);
-    NBComClient(PP, 123);
+    // NBComClient(PP, 123);
 }
