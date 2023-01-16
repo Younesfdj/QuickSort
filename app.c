@@ -36,7 +36,6 @@ struct Commande
     int Type;      // si 0 alors Achat sinon si 1 alors Vente
     int NFacture;  // numero de la facture
     int NCommande; // numero de la commande
-    // si il y a une facture alors c'est un achat sinon c'est un vente et il y a une commande et non pas une facture
     Date date;
     float MontantHT;
     float MontantTTC;
@@ -1482,6 +1481,7 @@ void PireClient(Pliste *F)
             }
             EnfilerPer(tempP, y);
         }
+
         while (F->TeteP->suiv != NULL)
         {
             x = DefilerPer(F);
@@ -1491,12 +1491,13 @@ void PireClient(Pliste *F)
             }
             EnfilerPer(tempP, x);
         }
+        EnfilerPer(F, y);
         while (tempP->TeteP->suiv != NULL)
         {
             x = DefilerPer(tempP);
             EnfilerPer(F, x);
         }
-        EnfilerPer(F, y);
+
         printf("\nle Pire Client est: %s %s", &z.Nom, &z.Prenom);
     }
     else
