@@ -1508,7 +1508,6 @@ void PireClient(Pliste *F)
             }
             EnfilerPer(tempP, x);
         }
-        EnfilerPer(F, y);
         while (tempP->TeteP->suiv != NULL)
         {
             x = DefilerPer(tempP);
@@ -1516,11 +1515,11 @@ void PireClient(Pliste *F)
         }
         if (trouve == 0)
         {
-            printf("--La files ne contient pas des clients pour tester !--");
+            printf("--La file ne contient pas des clients pour tester !--");
         }
         else
         {
-            printf("\nPires Client : ");
+            printf("Pires Client : ");
             while (F->TeteP->suiv != NULL)
             {
                 x = DefilerPer(F);
