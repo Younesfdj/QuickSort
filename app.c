@@ -742,7 +742,6 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
                 if (zz.ID == NC)
                 {
                     TC = 1;
-
                     zz.NBCom = zz.NBCom + 1;
                 }
                 EnfilerPer(TempPer, zz);
@@ -757,7 +756,6 @@ void AjouCom(ComListe *P, Aliste *ListArti, Pliste *ListP)
             {
                 printf("Cet client n'existe pas\najout de cet client en cours ...\n");
                 AjouPer(ListP);
-                TC = 1;
             }
         } while (TC == 0);
         new->IDclient = NC;
