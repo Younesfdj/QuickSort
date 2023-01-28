@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <string.h>
 #include <time.h>
-
+ 
 //--------------------------Declaration des structures--------------------------//
 typedef struct Date Date;
 struct Date
