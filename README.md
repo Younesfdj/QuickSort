@@ -7,7 +7,7 @@ QuickSort is a C program to manage items using specific data structures ( Stack 
 
 To run the program, use the following command:
 
-``` ./QuickSort.c```
+``` ./QuickSort```
 
 ## Data structures
 
